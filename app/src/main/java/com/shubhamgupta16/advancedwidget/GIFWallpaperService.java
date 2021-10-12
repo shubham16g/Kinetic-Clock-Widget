@@ -25,8 +25,7 @@ public class GIFWallpaperService extends WallpaperService {
         private final Draw draw;
 
         public GIFWallpaperEngine() {
-            MainUtils mu = new MainUtils(getApplicationContext());
-            draw = new Draw(mu);
+            draw = new Draw();
         }
 
         @Override
@@ -45,7 +44,7 @@ public class GIFWallpaperService extends WallpaperService {
                 Paint p = new Paint();
                 p.setColor(Color.GRAY);
                 canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), p);
-                canvas.drawBitmap(draw.createTimeClock(fraction), 150, 400, null);
+                canvas.drawBitmap(draw.createTimeClock(getApplicationContext(), fraction), 150, 400, null);
                 canvas.restore();
                 holder.unlockCanvasAndPost(canvas);
                 return null;

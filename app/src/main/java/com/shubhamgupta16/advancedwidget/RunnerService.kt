@@ -36,12 +36,10 @@ class RunnerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d("tag,start", "${intent?.action}")
         if (intent?.action.equals(START_FOREGROUND_ACTION)) {
 
             val filter = IntentFilter()
-            filter.addAction("SOME_ACTION")
-            filter.addAction("SOME_OTHER_ACTION")
+            filter.addAction(Intent.ACTION_TIME_TICK)
             val receiver = object : BroadcastReceiver() {
                 override fun onReceive(context: Context, intent: Intent) {
                     val i = Intent(AppWidgetManager.ACTION_APPWIDGET_UPDATE)

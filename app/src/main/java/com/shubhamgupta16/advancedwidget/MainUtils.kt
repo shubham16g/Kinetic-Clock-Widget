@@ -11,8 +11,8 @@ class MainUtils(private val context: Context) {
     private val stroke: Float;
 
     init {
-        size = dpToPx(15).roundToInt();
-        stroke = dpToPx(1);
+        size = dpToPx(60).roundToInt();
+        stroke = dpToPx(4);
     }
 
     private fun dpToPx(dp: Int): Float {

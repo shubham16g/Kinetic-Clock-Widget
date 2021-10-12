@@ -52,12 +52,12 @@ class TestWidget : AppWidgetProvider() {
         appWidgetId: Int
     ) {
         if (!::draw.isInitialized) {
-            draw = Draw(MainUtils(context))
+            draw = Draw()
         }
         draw.init()
         draw.draw { fraction ->
             if (appWidgetId < 0) {
-                var b: Bitmap? = draw.createTimeClock(fraction)
+                var b: Bitmap? = draw.createTimeClock(context, fraction)
                 val views = RemoteViews(context.packageName, R.layout.test_widget)
                 views.setImageViewBitmap(R.id.image, b)
 //                appWidgetManager.updateAppWidget(appWidgetId, views)
