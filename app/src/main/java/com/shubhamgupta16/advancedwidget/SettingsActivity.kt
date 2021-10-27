@@ -7,8 +7,6 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceManager
-import com.rarepebble.colorpicker.ColorPreference
 
 
 class SettingsActivity : AppCompatActivity() {
@@ -50,12 +48,6 @@ class SettingsActivity : AppCompatActivity() {
             setPreferencesFromResource(R.xml.root_preferences, rootKey)
         }
 
-        override fun onDisplayPreferenceDialog(preference: Preference?) {
-            if (preference is ColorPreference) {
-                preference.showDialog(this, 0)
-            } else super.onDisplayPreferenceDialog(preference)
-
-        }
 
         override fun onPreferenceTreeClick(preference: Preference?): Boolean {
             return super.onPreferenceTreeClick(preference)

@@ -16,9 +16,7 @@ import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 
-
 class MainActivity : AppCompatActivity() {
-
 
     private lateinit var btnBg: View
     private lateinit var powerBtn: ImageButton
@@ -96,12 +94,6 @@ class MainActivity : AppCompatActivity() {
                 return false
             }
         }
-        val ids = AppWidgetManager.getInstance(this).getAppWidgetIds(
-            ComponentName(
-                this,
-                TestWidget::class.java
-            )
-        )
 //        if (ids.isNotEmpty()) {
         val i = Intent(this, RunnerService::class.java)
         i.action = RunnerService.START_FOREGROUND_ACTION
@@ -128,7 +120,6 @@ class MainActivity : AppCompatActivity() {
         val displayMetrics: DisplayMetrics = resources.displayMetrics
         return dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT)
     }
-
 
     companion object {
         @Suppress("DEPRECATION") // Deprecated for third party Services.
