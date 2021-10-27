@@ -1,6 +1,20 @@
 <resources>
-    <string name="app_name">AdvancedWidget</string>
-    <string name="appwidget_text">EXAMPLE</string>
-    <string name="add_widget">Add widget</string>
+    <string name="app_name">12x8 Analog Clock Widget</string>
     <string name="app_widget_description">This is an app widget description</string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Preference Titles -->
+    <string name="background">Background</string>
+    <string name="clocks">Clocks</string>
+    <string name="pins">Pins</string>
+
+    <!-- Messages Preferences -->
+
+    <!-- Sync Preferences -->
+    <string name="show_clocks">Show Clocks</string>
+    <string name="show_background">Show Background</string>
+    <string name="desc">This app is a CLOCK WIDGET. You can find the WIDGET inside Widget Section of your phone.\n\nAlso Turn-on this button to enable the Widget. (Storage Read Permission is required).</string>
+    <string name="widget_button">Widget Power Button</string>
+    <string name="widget_settings_button">Widget Settings Button</string>
+    <string name="footer">App Developed By Acoder.</string>
 </resources>

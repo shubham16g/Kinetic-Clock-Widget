@@ -7,72 +7,85 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.util.Log
+import android.view.View
 import android.widget.RemoteViews
+import android.widget.Toast
+import com.shubhamgupta16.advancedwidget.MainActivity.Companion.isServiceRunning
 
 class TestWidget : AppWidgetProvider() {
 
+    private lateinit var draw: Draw
 
     override fun onUpdate(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-
         for (appWidgetId in appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId)
         }
     }
 
-    override fun onEnabled(context: Context) {
-        val i = Intent(context, RunnerService::class.java)
-        i.action = RunnerService.START_FOREGROUND_ACTION
-        context.startService(i)
-    }
+    override fun onEnabled(context: Context?) {
+        super.onEnabled(context)
 
-    override fun onDisabled(context: Context) {
-        val i = Intent(context, RunnerService::class.java)
-        i.action = RunnerService.STOP_FOREGROUND_ACTION
-        context.startService(i)
+        if (context?.isServiceRunning(RunnerService::class.java) == true)
+            updateAppWidget(context, AppWidgetManager.getInstance(context), -1)
+        else
+            context?.let { updateRemoteView(null, it, AppWidgetManager.getInstance(context)) }
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
-        if (context != null)
-            if (intent?.action == AppWidgetManager.ACTION_APPWIDGET_UPDATE) {
+        if (context == null) return
+
+        if (intent?.action == "update_my_clock") {
+            val data = intent.getIntExtra("data", 0)
+            if (data == 1)
                 updateAppWidget(context, AppWidgetManager.getInstance(context), -1)
-            }
-
+            else
+                updateRemoteView(null, context, AppWidgetManager.getInstance(context))
+        }
     }
-
-    private lateinit var draw: Draw
 
     private fun updateAppWidget(
         context: Context,
         appWidgetManager: AppWidgetManager,
         appWidgetId: Int
     ) {
-        if (!::draw.isInitialized) {
-            draw = Draw()
-        }
-        draw.init()
-        draw.draw { fraction ->
-            if (appWidgetId < 0) {
-                var b: Bitmap? = draw.createTimeClock(context, fraction)
-                val views = RemoteViews(context.packageName, R.layout.test_widget)
-                views.setImageViewBitmap(R.id.image, b)
-//                appWidgetManager.updateAppWidget(appWidgetId, views)
-                appWidgetManager.updateAppWidget(
-                    ComponentName(
-                        context.packageName,
-                        TestWidget::class.java.name
-                    ), views
-                )
-                b = null
+        if (appWidgetId >= 0) return
+        if (!::draw.isInitialized)
+            draw = Draw(context)
+        val isByTime = draw.init()
+        if (isByTime) {
+            draw.drawAnim { fraction ->
+                updateRemoteView(draw.createTimeClockFrame(fraction), context, appWidgetManager)
             }
+        } else {
+            updateRemoteView(draw.createStaticTimeClock(), context, appWidgetManager)
         }
-
-
     }
 
-
+    private fun updateRemoteView(
+        b: Bitmap?,
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+    ) {
+        val views = RemoteViews(context.packageName, R.layout.test_widget)
+        if (b != null) {
+            views.setViewVisibility(R.id.testText, View.GONE)
+            views.setViewVisibility(R.id.image, View.VISIBLE)
+            views.setImageViewBitmap(R.id.image, b)
+        } else {
+            views.setViewVisibility(R.id.testText, View.VISIBLE)
+            views.setViewVisibility(R.id.image, View.GONE)
+            views.setTextViewText(R.id.testText, "Open the App to Enable Widget.")
+        }
+        appWidgetManager.updateAppWidget(
+            ComponentName(
+                context.packageName,
+                TestWidget::class.java.name
+            ), views
+        )
+    }
 }

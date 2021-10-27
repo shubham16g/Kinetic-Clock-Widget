@@ -1,0 +1,40 @@
+<resources>
+    <!-- Reply Preference -->
+    <string-array name="reply_entries">
+        <item>Solid Color</item>
+        <item>Wallpaper Blur</item>
+    </string-array>
+
+    <string-array name="reply_values">
+        <item>solid_color</item>
+        <item>wall_blur</item>
+    </string-array>
+
+    <string-array name="colors_array">
+        <item>#fe2e2e</item>
+        <item>#f78182</item>
+        <item>#ff8000</item>
+        <item>#f8be82</item>
+        <item>#ffff00</item>
+        <item>#f3f681</item>
+        <item>#00ff01</item>
+        <item>#81f681</item>
+        <item>#01ffff</item>
+        <item>#aaf6f1</item>
+        <item>#0274df</item>
+        <item>#81bef7</item>
+        <item>#0101e0</item>
+        <item>#8182f8</item>
+        <item>#7602e1</item>
+        <item>#bd81f7</item>
+        <item>#e001d7</item>
+        <item>#f5a9f3</item>
+        <item>#e00173</item>
+        <item>#f881bd</item>
+        <item>#000000</item>
+        <item>#444444</item>
+        <item>#777777</item>
+        <item>#cccccc</item>
+        <item>#ffffff</item>
+    </string-array>
+</resources>

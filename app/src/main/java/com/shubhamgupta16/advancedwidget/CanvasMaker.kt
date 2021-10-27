@@ -1,43 +1,25 @@
 package com.shubhamgupta16.advancedwidget
 
-import android.content.Context
 import android.graphics.*
-import android.util.DisplayMetrics
-import android.util.Log
-import java.util.*
 import kotlin.math.cos
-import kotlin.math.roundToInt
 import kotlin.math.sin
 
 
-class MainDrawer(private val context: Context) {
+class CanvasMaker(baseBg: Bitmap, private val stroke: Float, private val size: Int, color: Int) {
 
-    private fun dpToPx(dp: Int): Float {
-        val displayMetrics: DisplayMetrics = context.resources.displayMetrics
-        return dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT)
-    }
+    private val bg:Bitmap = baseBg.copy(baseBg.config, baseBg.isMutable)
+    private val canvas: Canvas = Canvas(bg)
+    private val paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-    private val size: Int = dpToPx(15).roundToInt()
-    private val stroke: Float = dpToPx(1)
-    private val canvas: Canvas
-    private val paint: Paint
-    private val bg: Bitmap
     init {
-        val top = stroke * 9.3f
-        val left = stroke * 12f
+        paint.style = Paint.Style.STROKE
+        paint.isDither = true
+        paint.strokeJoin = Paint.Join.ROUND
+        paint.strokeCap = Paint.Cap.ROUND
 
-        val bt = BitmapFactory.decodeResource(context.resources, R.drawable.multi_clock)
-        bg = Bitmap.createScaledBitmap(
-            bt, (size * 8 + left + stroke * 12).toInt(),
-            (size * 12 + top + stroke * 11).toInt(), false
-        )
-        canvas = Canvas(bg)
-        paint = Paint()
-        paint.color = Color.parseColor("#555555")
+        paint.color = color
         paint.strokeWidth = stroke
     }
-
-
 
     fun drawClocks(
         block1: Array<FloatArray>,
@@ -64,8 +46,8 @@ class MainDrawer(private val context: Context) {
         var left = baseX
         for (i in numberArray.indices) {
             val pin = numberArray[i]
-            drawLine(pin[0], size / 2f, left, top)
-            drawLine(pin[1], size / 2.5f, left, top)
+            drawLine(pin[0], size / 2.4f, left, top)
+            drawLine(pin[1], size / 2.8f, left, top)
             if ((i + 1) % 4 == 0) {
                 top += size
                 left = baseX
@@ -74,7 +56,6 @@ class MainDrawer(private val context: Context) {
         }
     }
 
-
     private fun drawLine(angle: Float, radius: Float, x: Float, y: Float) {
         val toX = x + radius * sin(Math.toRadians(angle.toDouble()))
         val toY = y + radius * cos(Math.toRadians(angle.toDouble()))
@@ -82,13 +63,25 @@ class MainDrawer(private val context: Context) {
 
     }
 
-
-
-
-
-    fun getBitmap(): Bitmap {
-        return bg
+    fun getBitmap(roundPx: Float): Bitmap {
+        return roundCornered(bg, roundPx)
     }
 
-//    ***********************************************************************************************************
+    private fun roundCornered(bitmap: Bitmap, roundPx: Float): Bitmap {
+        val result = Bitmap.createBitmap(
+            bitmap.width, bitmap.height,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(result)
+        val paint = Paint()
+        val rect = Rect(0, 0, bitmap.width, bitmap.height)
+        val rectF = RectF(rect)
+        paint.isAntiAlias = true
+        canvas.drawARGB(0, 0, 0, 0)
+        paint.color = Color.BLUE
+        canvas.drawRoundRect(rectF, roundPx, roundPx, paint)
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        canvas.drawBitmap(bitmap, rect, rect, paint)
+        return result
+    }
 }
