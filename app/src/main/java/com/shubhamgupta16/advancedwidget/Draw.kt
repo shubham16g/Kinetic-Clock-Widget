@@ -135,14 +135,22 @@ class Draw(private val context: Context) {
         }
     }
 
-    fun createTimeClockFrame(fraction: Float): Bitmap {
+    fun createTimeClockFrame(fraction: Float, isReArrange: Boolean = false): Bitmap {
         val mu = CanvasMaker(baseBg, stroke, size, color)
-        mu.drawClocks(
-            getBlockHour1(fraction),
-            getBlockHour2(fraction),
-            getBlockMin1(fraction),
-            getBlockMin2(fraction)
-        )
+        if (isReArrange)
+            mu.drawClocks(
+                getBlockReArranged(irr[0], fraction),
+                getBlockReArranged(irr[1], fraction),
+                getBlockReArranged(irr[2], fraction),
+                getBlockReArranged(irr[3], fraction),
+            )
+        else
+            mu.drawClocks(
+                getBlockHour1(fraction),
+                getBlockHour2(fraction),
+                getBlockMin1(fraction),
+                getBlockMin2(fraction)
+            )
         return mu.getBitmap(dpToPx(8))
     }
 
@@ -182,12 +190,18 @@ class Draw(private val context: Context) {
         return arr
     }
 
+    private fun getBlockReArranged(num: Int, fraction: Float): Array<FloatArray> {
+        val arr = ClockData.getLargeArray(num).clone()
+        translate(fraction, arr, ClockData.getLargeArray(num), true)
+        return arr
+    }
+
     private fun getBlockMin1(fraction: Float): Array<FloatArray> {
         val arr: Array<FloatArray>
         var isClone = true
-        if (irr[3] == 0 && irr[2] == 0)
+        if (irr[3] == 0 && irr[2] == 0)//__:00
             arr = ClockData.getLargeArray(5).clone()
-        else if (irr[3] == 0)
+        else if (irr[3] == 0)//__:_0
             arr = ClockData.getLargeArray(irr[2] - 1).clone()
         else {
             arr = ClockData.getLargeArray(irr[2])
@@ -238,15 +252,24 @@ class Draw(private val context: Context) {
     private fun translate(
         r: Float, preArr: Array<FloatArray>,
         postArr: Array<FloatArray>,
+        isReArrange: Boolean = false
     ): Array<FloatArray> {
         for (i in preArr.indices) {
             val current = preArr[i]
             val after = postArr[i]
-            preArr[i] = floatArrayOf(
-                update(r, current[0], after[0], true),
-                update(r, current[1], after[1], false)
-            )
+            if (isReArrange){
+                preArr[i] = floatArrayOf(
+                    update(r, current[0], after[0] + 360, true),
+                    update(r, current[1] + 360, after[1], false)
+                )
+            } else {
+                preArr[i] = floatArrayOf(
+                    update(r, current[0], after[0], true),
+                    update(r, current[1], after[1], false)
+                )
+            }
         }
+
         return preArr
     }
 

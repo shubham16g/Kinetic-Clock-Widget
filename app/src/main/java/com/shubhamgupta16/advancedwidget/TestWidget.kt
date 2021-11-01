@@ -6,31 +6,28 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import android.widget.Toast
 import com.shubhamgupta16.advancedwidget.MainActivity.Companion.isServiceRunning
+import android.app.PendingIntent
+import android.util.Log
 
-class TestWidget : AppWidgetProvider() {
 
-    private lateinit var draw: Draw
+open class TestWidget : AppWidgetProvider() {
 
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray
-    ) {
-        for (appWidgetId in appWidgetIds) {
-            updateAppWidget(context, appWidgetManager, appWidgetId)
-        }
+    companion object{
+        private const val SYNC_CLICKED = "automaticWidgetSyncButtonClick"
+        private const val ANIM_DEFAULT = -1
+        private const val ANIM_REARRANGE = 1
     }
+    private lateinit var draw: Draw
 
     override fun onEnabled(context: Context?) {
         super.onEnabled(context)
 
         if (context?.isServiceRunning(RunnerService::class.java) == true)
-            updateAppWidget(context, AppWidgetManager.getInstance(context), -1)
+            updateAppWidget(context, AppWidgetManager.getInstance(context), ANIM_DEFAULT)
         else
             context?.let { updateRemoteView(null, it, AppWidgetManager.getInstance(context)) }
     }
@@ -42,27 +39,35 @@ class TestWidget : AppWidgetProvider() {
         if (intent?.action == "update_my_clock") {
             val data = intent.getIntExtra("data", 0)
             if (data == 1)
-                updateAppWidget(context, AppWidgetManager.getInstance(context), -1)
+                updateAppWidget(context, AppWidgetManager.getInstance(context), ANIM_DEFAULT)
             else
                 updateRemoteView(null, context, AppWidgetManager.getInstance(context))
+        } else if (intent?.action == SYNC_CLICKED){
+            updateAppWidget(context, AppWidgetManager.getInstance(context), ANIM_REARRANGE)
         }
     }
 
     private fun updateAppWidget(
         context: Context,
         appWidgetManager: AppWidgetManager,
-        appWidgetId: Int
+        animType: Int
     ) {
-        if (appWidgetId >= 0) return
         if (!::draw.isInitialized)
             draw = Draw(context)
         val isByTime = draw.init()
-        if (isByTime) {
-            draw.drawAnim { fraction ->
-                updateRemoteView(draw.createTimeClockFrame(fraction), context, appWidgetManager)
+        if (animType == ANIM_DEFAULT) {
+            if (isByTime) {
+                draw.drawAnim { fraction ->
+                    updateRemoteView(draw.createTimeClockFrame(fraction), context, appWidgetManager)
+                }
+            } else {
+                updateRemoteView(draw.createStaticTimeClock(), context, appWidgetManager)
             }
-        } else {
-            updateRemoteView(draw.createStaticTimeClock(), context, appWidgetManager)
+        } else{
+            Log.d("TAG", "updateAppWidget: Rearr")
+            draw.drawAnim { fraction ->
+                updateRemoteView(draw.createTimeClockFrame(fraction, true), context, appWidgetManager)
+            }
         }
     }
 
@@ -75,6 +80,7 @@ class TestWidget : AppWidgetProvider() {
         if (b != null) {
             views.setViewVisibility(R.id.testText, View.GONE)
             views.setViewVisibility(R.id.image, View.VISIBLE)
+            views.setOnClickPendingIntent(R.id.image, getPendingSelfIntent(context));
             views.setImageViewBitmap(R.id.image, b)
         } else {
             views.setViewVisibility(R.id.testText, View.VISIBLE)
@@ -87,5 +93,11 @@ class TestWidget : AppWidgetProvider() {
                 TestWidget::class.java.name
             ), views
         )
+    }
+
+    private fun getPendingSelfIntent(context: Context?): PendingIntent? {
+        val intent = Intent(context, javaClass)
+        intent.action = SYNC_CLICKED
+        return PendingIntent.getBroadcast(context, 0, intent, 0)
     }
 }
