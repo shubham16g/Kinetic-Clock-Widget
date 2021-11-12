@@ -1,20 +1,24 @@
 package com.shubhamgupta16.advancedwidget
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.ActivityManager
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.util.DisplayMetrics
 import android.view.View
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -87,8 +91,19 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, SettingsActivity::class.java))
     }
 
+    @SuppressLint("BatteryLife")
     private fun tryStoragePermissionAndEnable(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                val intent = Intent()
+                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                intent.flags = FLAG_ACTIVITY_NEW_TASK
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+                return false
+            }
+
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 12)
                 return false

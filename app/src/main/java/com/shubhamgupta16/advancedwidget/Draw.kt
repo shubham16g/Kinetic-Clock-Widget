@@ -24,11 +24,14 @@ class Draw(private val context: Context) {
         const val BG_LEFT_FACTOR = 9.6f
         const val CLOCKS_HEIGHT_FACTOR = 12.35f
         const val CLOCKS_WIDTH_FACTOR = 8.35f
+        const val ANIM_DURATION = 5000L
     }
 
     private lateinit var va: ValueAnimator
-    private val sf = PreferenceManager.getDefaultSharedPreferences(context);
-    private val irr = IntArray(4)
+    private var currentSec = 1
+    private lateinit var currentTime: IntArray
+    private lateinit var futureTime: IntArray
+    private val sf = PreferenceManager.getDefaultSharedPreferences(context)
     private var color: Int = sf.getInt("pinsColor", Color.parseColor("#000000"))
 
     //    no settings
@@ -43,7 +46,7 @@ class Draw(private val context: Context) {
     fun drawAnim(listener: (fraction: Float) -> Unit) {
         if (!::va.isInitialized) {
             va = ValueAnimator.ofFloat(0f, 1f)
-            va.duration = 5000
+            va.duration = ANIM_DURATION
             va.interpolator = AccelerateDecelerateInterpolator()
         }
         va.pause()
@@ -62,21 +65,37 @@ class Draw(private val context: Context) {
 
         buildBG()
         val calendar = Calendar.getInstance()
-        val hour = calendar.get(Calendar.HOUR)
-        val min = calendar.get(Calendar.MINUTE)
-        val sec = calendar.get(Calendar.SECOND)
-        irr[0] = (hour - hour % 10) / 10
-        irr[1] = hour - (irr[0] * 10)
-        if (irr[0] == 0 && irr[1] == 0) {
-            irr[0] = 1
-            irr[1] = 2
-        }
-        irr[2] = (min - min % 10) / 10
-        irr[3] = (min - (irr[2] * 10))
-        Log.d("Draw:", "Time: $hour:$min:$sec -> ${irr[0]} ${irr[1]} ${irr[2]} ${irr[3]}")
-        if (sec <= 1)
+        currentTime = calendar.toTime()
+        currentSec = calendar.get(Calendar.SECOND)
+
+//        Log.d("context", "${calendar.timeInMillis}")
+        calendar.timeInMillis += 1000 * 60
+//        Log.d("context 2", "${calendar.timeInMillis}")
+        futureTime = calendar.toTime()
+        if (currentSec <= 1)
             return true
         return false
+    }
+
+    private fun Calendar.toTime(): IntArray {
+        val currentTime = IntArray(4)
+        val hour = get(Calendar.HOUR)
+        val min = get(Calendar.MINUTE)
+        val sec = get(Calendar.SECOND)
+        currentTime[0] = (hour - hour % 10) / 10
+        currentTime[1] = hour - (currentTime[0] * 10)
+        if (currentTime[0] == 0 && currentTime[1] == 0) {
+            currentTime[0] = 1
+            currentTime[1] = 2
+        }
+        currentTime[2] = (min - min % 10) / 10
+        currentTime[3] = (min - (currentTime[2] * 10))
+        Log.d(
+            "Draw:",
+            "Time: $hour:$min:$sec -> ${currentTime[0]} ${currentTime[1]} ${currentTime[2]} ${currentTime[3]}"
+        )
+
+        return currentTime
     }
 
     private fun buildBG() {
@@ -138,12 +157,21 @@ class Draw(private val context: Context) {
     fun createTimeClockFrame(fraction: Float, isReArrange: Boolean = false): Bitmap {
         val mu = CanvasMaker(baseBg, stroke, size, color)
         if (isReArrange)
-            mu.drawClocks(
-                getBlockReArranged(irr[0], fraction),
-                getBlockReArranged(irr[1], fraction),
-                getBlockReArranged(irr[2], fraction),
-                getBlockReArranged(irr[3], fraction),
-            )
+//            todo time check
+            if (currentSec >= 55) {
+                mu.drawClocks(
+                    getBlockReArranged(currentTime[0], futureTime[0], fraction),
+                    getBlockReArranged(currentTime[1], futureTime[1], fraction),
+                    getBlockReArranged(currentTime[2], futureTime[2], fraction),
+                    getBlockReArranged(currentTime[3], futureTime[3], fraction),
+                )
+            } else
+                mu.drawClocks(
+                    getBlockReArranged(currentTime[0], currentTime[0], fraction),
+                    getBlockReArranged(currentTime[1], currentTime[1], fraction),
+                    getBlockReArranged(currentTime[2], currentTime[2], fraction),
+                    getBlockReArranged(currentTime[3], currentTime[3], fraction),
+                )
         else
             mu.drawClocks(
                 getBlockHour1(fraction),
@@ -157,10 +185,10 @@ class Draw(private val context: Context) {
     fun createStaticTimeClock(): Bitmap {
         val mu = CanvasMaker(baseBg, stroke, size, color)
         mu.drawClocks(
-            ClockData.getLargeArray(irr[0]),
-            ClockData.getLargeArray(irr[1]),
-            ClockData.getLargeArray(irr[2]),
-            ClockData.getLargeArray(irr[3]),
+            ClockData.getLargeArray(currentTime[0]),
+            ClockData.getLargeArray(currentTime[1]),
+            ClockData.getLargeArray(currentTime[2]),
+            ClockData.getLargeArray(currentTime[3]),
         )
         return mu.getBitmap(dpToPx(8))
     }
@@ -184,63 +212,63 @@ class Draw(private val context: Context) {
     }
 
     private fun getBlockMin2(fraction: Float): Array<FloatArray> {
-        val arr = if (irr[3] == 0) ClockData.getLargeArray(9).clone()
-        else ClockData.getLargeArray(irr[3] - 1).clone()
-        translate(fraction, arr, ClockData.getLargeArray(irr[3]))
+        val arr = if (currentTime[3] == 0) ClockData.getLargeArray(9).clone()
+        else ClockData.getLargeArray(currentTime[3] - 1).clone()
+        translate(fraction, arr, ClockData.getLargeArray(currentTime[3]))
         return arr
     }
 
-    private fun getBlockReArranged(num: Int, fraction: Float): Array<FloatArray> {
+    private fun getBlockReArranged(num: Int, numAfter: Int, fraction: Float): Array<FloatArray> {
         val arr = ClockData.getLargeArray(num).clone()
-        translate(fraction, arr, ClockData.getLargeArray(num), true)
+        translate(fraction, arr, ClockData.getLargeArray(numAfter), true)
         return arr
     }
 
     private fun getBlockMin1(fraction: Float): Array<FloatArray> {
         val arr: Array<FloatArray>
         var isClone = true
-        if (irr[3] == 0 && irr[2] == 0)//__:00
+        if (currentTime[3] == 0 && currentTime[2] == 0)//__:00
             arr = ClockData.getLargeArray(5).clone()
-        else if (irr[3] == 0)//__:_0
-            arr = ClockData.getLargeArray(irr[2] - 1).clone()
+        else if (currentTime[3] == 0)//__:_0
+            arr = ClockData.getLargeArray(currentTime[2] - 1).clone()
         else {
-            arr = ClockData.getLargeArray(irr[2])
+            arr = ClockData.getLargeArray(currentTime[2])
             isClone = false
         }
         if (isClone)
-            translate(fraction, arr, ClockData.getLargeArray(irr[2]))
+            translate(fraction, arr, ClockData.getLargeArray(currentTime[2]))
         return arr
     }
 
     private fun getBlockHour2(fraction: Float): Array<FloatArray> {
         val arr: Array<FloatArray>
         var isClone = true
-        if (irr[0] == 1 && irr[1] == 2 && irr[2] == 0 && irr[2] == 0)
+        if (currentTime[0] == 1 && currentTime[1] == 2 && currentTime[2] == 0 && currentTime[2] == 0)
             arr = ClockData.getLargeArray(1).clone()
-        else if (irr[0] == 0 && irr[1] == 1 && irr[2] == 0 && irr[2] == 0)
+        else if (currentTime[0] == 0 && currentTime[1] == 1 && currentTime[2] == 0 && currentTime[2] == 0)
             arr = ClockData.getLargeArray(2).clone()
         else {
-            arr = ClockData.getLargeArray(irr[1])
+            arr = ClockData.getLargeArray(currentTime[1])
             isClone = false
         }
         if (isClone)
-            translate(fraction, arr, ClockData.getLargeArray(irr[1]))
+            translate(fraction, arr, ClockData.getLargeArray(currentTime[1]))
         return arr
     }
 
     private fun getBlockHour1(fraction: Float): Array<FloatArray> {
         val arr: Array<FloatArray>
         var isClone = true
-        if (irr[0] == 1 && irr[1] == 0 && irr[2] == 0 && irr[2] == 0)
+        if (currentTime[0] == 1 && currentTime[1] == 0 && currentTime[2] == 0 && currentTime[2] == 0)
             arr = ClockData.getLargeArray(0).clone()
-        else if (irr[0] == 0 && irr[1] == 1 && irr[2] == 0 && irr[2] == 0)
+        else if (currentTime[0] == 0 && currentTime[1] == 1 && currentTime[2] == 0 && currentTime[2] == 0)
             arr = ClockData.getLargeArray(1).clone()
         else {
-            arr = ClockData.getLargeArray(irr[0])
+            arr = ClockData.getLargeArray(currentTime[0])
             isClone = false
         }
         if (isClone)
-            translate(fraction, arr, ClockData.getLargeArray(irr[0]))
+            translate(fraction, arr, ClockData.getLargeArray(currentTime[0]))
         return arr
     }
 

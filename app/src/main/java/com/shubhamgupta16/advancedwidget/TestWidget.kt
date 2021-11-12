@@ -1,5 +1,6 @@
 package com.shubhamgupta16.advancedwidget
 
+import android.annotation.SuppressLint
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
@@ -8,10 +9,10 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.view.View
 import android.widget.RemoteViews
-import android.widget.Toast
 import com.shubhamgupta16.advancedwidget.MainActivity.Companion.isServiceRunning
 import android.app.PendingIntent
 import android.util.Log
+import androidx.preference.PreferenceManager
 
 
 open class TestWidget : AppWidgetProvider() {
@@ -36,6 +37,8 @@ open class TestWidget : AppWidgetProvider() {
         super.onReceive(context, intent)
         if (context == null) return
 
+        val sf = PreferenceManager.getDefaultSharedPreferences(context)
+        if (sf.getBoolean("isAnimating", false)) return
         if (intent?.action == "update_my_clock") {
             val data = intent.getIntExtra("data", 0)
             if (data == 1)
@@ -47,17 +50,22 @@ open class TestWidget : AppWidgetProvider() {
         }
     }
 
+    @SuppressLint("CommitPrefEdits")
     private fun updateAppWidget(
         context: Context,
         appWidgetManager: AppWidgetManager,
         animType: Int
     ) {
+        val editor = PreferenceManager.getDefaultSharedPreferences(context).edit()
         if (!::draw.isInitialized)
             draw = Draw(context)
         val isByTime = draw.init()
         if (animType == ANIM_DEFAULT) {
             if (isByTime) {
                 draw.drawAnim { fraction ->
+                    if (fraction == 0f || fraction == 1f) {
+                        editor.putBoolean("isAnimating", fraction == 0f).apply()
+                    }
                     updateRemoteView(draw.createTimeClockFrame(fraction), context, appWidgetManager)
                 }
             } else {
@@ -66,6 +74,9 @@ open class TestWidget : AppWidgetProvider() {
         } else{
             Log.d("TAG", "updateAppWidget: Rearr")
             draw.drawAnim { fraction ->
+                if (fraction == 0f || fraction == 1f) {
+                    editor.putBoolean("isAnimating", fraction == 0f).apply()
+                }
                 updateRemoteView(draw.createTimeClockFrame(fraction, true), context, appWidgetManager)
             }
         }
