@@ -44,9 +44,10 @@ class RunnerService : Service() {
     }
 
 
+    private lateinit var receiver: BroadcastReceiver
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val receiver = object : BroadcastReceiver() {
+        receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 sendTimeTick(context, 1)
             }
@@ -62,6 +63,7 @@ class RunnerService : Service() {
             startForeground()
         } else if (intent?.action.equals(STOP_FOREGROUND_ACTION)) {
             stopForeground(true)
+//            unregisterReceiver(receiver)
             stopSelfResult(startId)
         }
         return START_NOT_STICKY

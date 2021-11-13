@@ -37,15 +37,20 @@ open class TestWidget : AppWidgetProvider() {
         super.onReceive(context, intent)
         if (context == null) return
 
-        val sf = PreferenceManager.getDefaultSharedPreferences(context)
-        if (sf.getBoolean("isAnimating", false)) return
+
         if (intent?.action == "update_my_clock") {
+            Log.d("here", "update_my_clock")
+            val sf = PreferenceManager.getDefaultSharedPreferences(context)
+            if (sf.getBoolean("isAnimating", false)) return
             val data = intent.getIntExtra("data", 0)
             if (data == 1)
                 updateAppWidget(context, AppWidgetManager.getInstance(context), ANIM_DEFAULT)
             else
                 updateRemoteView(null, context, AppWidgetManager.getInstance(context))
         } else if (intent?.action == SYNC_CLICKED){
+            Log.d("here", "anim_rearrange")
+            val sf = PreferenceManager.getDefaultSharedPreferences(context)
+            if (sf.getBoolean("isAnimating", false)) return
             updateAppWidget(context, AppWidgetManager.getInstance(context), ANIM_REARRANGE)
         }
     }
@@ -57,6 +62,7 @@ open class TestWidget : AppWidgetProvider() {
         animType: Int
     ) {
         val editor = PreferenceManager.getDefaultSharedPreferences(context).edit()
+        Log.d("here2", "here2")
         if (!::draw.isInitialized)
             draw = Draw(context)
         val isByTime = draw.init()
