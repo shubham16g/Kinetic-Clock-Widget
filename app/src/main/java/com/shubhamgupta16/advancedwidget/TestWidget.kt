@@ -1,39 +1,62 @@
 package com.shubhamgupta16.advancedwidget
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.os.Build
+import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
-import com.shubhamgupta16.advancedwidget.MainActivity.Companion.isServiceRunning
-import android.app.PendingIntent
-import android.util.Log
 import androidx.preference.PreferenceManager
+import com.shubhamgupta16.advancedwidget.MainActivity.Companion.isServiceRunning
 
 
 open class TestWidget : AppWidgetProvider() {
 
     companion object{
         private const val SYNC_CLICKED = "automaticWidgetSyncButtonClick"
+        const val PERMISSION_CLICKED = "automaticWidgetPermissionButtonClick"
         private const val ANIM_DEFAULT = -1
         private const val TAG = "TestWidget"
         private const val ANIM_REARRANGE = 1
     }
+
     private lateinit var draw: Draw
 
     override fun onEnabled(context: Context?) {
         super.onEnabled(context)
-        val isServiceRunning = context?.isServiceRunning(RunnerService::class.java)
-        if (isServiceRunning == true)
-            updateAppWidget(context, AppWidgetManager.getInstance(context), ANIM_DEFAULT)
-        else
-            context?.let { updateRemoteView(null, it, AppWidgetManager.getInstance(context)) }
-        Log.d(TAG, "onEnabled: isServiceRunning: $isServiceRunning" )
+        if (context == null) return
+        tryToEnableWidget(context)
+        updateAppWidget(context, ANIM_DEFAULT)
+        Log.d(TAG, "onEnabled")
 
+    }
+
+    override fun onDisabled(context: Context?) {
+        super.onDisabled(context)
+        context?.sendBroadcast(Intent(RunnerService.STOP_FOREGROUND_ACTION))
+
+    }
+
+    private fun tryToEnableWidget(context: Context) {
+        val isServiceRunning = context.isServiceRunning(RunnerService::class.java)
+        if (!isServiceRunning) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (context.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    updateRemoteView(null, context, data = -1)
+                    return
+                }
+            }
+            val i = Intent(context, RunnerService::class.java)
+            context.startService(i)
+        }
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -45,27 +68,35 @@ open class TestWidget : AppWidgetProvider() {
 
         if (intent?.action == "update_my_clock") {
             Log.d("here", "update_my_clock")
+            val data = intent.getIntExtra("data", 0)
+            Log.d(TAG, "onReceive: Data: $data")
             val sf = PreferenceManager.getDefaultSharedPreferences(context)
             if (sf.getBoolean("isAnimating", false)) return
-            val data = intent.getIntExtra("data", 0)
             if (data == 1)
-                updateAppWidget(context, AppWidgetManager.getInstance(context), ANIM_DEFAULT)
-            else
-                updateRemoteView(null, context, AppWidgetManager.getInstance(context))
-        } else if (intent?.action == SYNC_CLICKED){
+                updateAppWidget(context, ANIM_DEFAULT)
+            else{
+                tryToEnableWidget(context)
+                updateAppWidget(context, ANIM_DEFAULT)
+            }
+//                updateRemoteView(null, context, AppWidgetManager.getInstance(context), data)
+        } else if (intent?.action == SYNC_CLICKED) {
+            tryToEnableWidget(context)
             Log.d("here", "anim_rearrange")
             val sf = PreferenceManager.getDefaultSharedPreferences(context)
             if (sf.getBoolean("isAnimating", false)) return
-            updateAppWidget(context, AppWidgetManager.getInstance(context), ANIM_REARRANGE)
+            updateAppWidget(context, ANIM_REARRANGE)
+        } else if (intent?.action == AppWidgetManager.ACTION_APPWIDGET_UPDATE) {
+            tryToEnableWidget(context)
         }
     }
 
     @SuppressLint("CommitPrefEdits")
     private fun updateAppWidget(
         context: Context,
-        appWidgetManager: AppWidgetManager,
         animType: Int
     ) {
+        Log.d(TAG, "updateAppWidget: ")
+        val appWidgetManager = AppWidgetManager.getInstance(context)
         val editor = PreferenceManager.getDefaultSharedPreferences(context).edit()
         Log.d(TAG, "updateAppWidget: AnimType = $animType")
         if (!::draw.isInitialized)
@@ -96,18 +127,31 @@ open class TestWidget : AppWidgetProvider() {
     private fun updateRemoteView(
         b: Bitmap?,
         context: Context,
-        appWidgetManager: AppWidgetManager,
+        appWidgetManager: AppWidgetManager = AppWidgetManager.getInstance(context),
+        data: Int = 1
     ) {
         val views = RemoteViews(context.packageName, R.layout.test_widget)
-        if (b != null) {
-            views.setViewVisibility(R.id.testText, View.GONE)
-            views.setViewVisibility(R.id.image, View.VISIBLE)
-            views.setOnClickPendingIntent(R.id.image, getPendingSelfIntent(context));
-            views.setImageViewBitmap(R.id.image, b)
-        } else {
+        if (b == null) {
             views.setViewVisibility(R.id.testText, View.VISIBLE)
             views.setViewVisibility(R.id.image, View.GONE)
-            views.setTextViewText(R.id.testText, "Open the App to Enable Widget.")
+            val message = when (data) {
+                0 -> context.resources.getString(R.string.wait_automatically)
+                -1 -> {
+                    val intent = Intent(context, MainActivity::class.java)
+                    val pi = PendingIntent.getActivity(context, 0, intent, 0)
+                    intent.action = PERMISSION_CLICKED
+                    views.setOnClickPendingIntent(R.id.testText, pi)
+                    "Need Permission! Click to gave permissions."
+                }
+                else -> ""
+            }
+            views.setTextViewText(R.id.testText, message)
+
+        } else {
+            views.setViewVisibility(R.id.testText, View.GONE)
+            views.setViewVisibility(R.id.image, View.VISIBLE)
+            views.setOnClickPendingIntent(R.id.image, getPendingSelfIntent(context))
+            views.setImageViewBitmap(R.id.image, b)
         }
         appWidgetManager.updateAppWidget(
             ComponentName(
@@ -117,9 +161,12 @@ open class TestWidget : AppWidgetProvider() {
         )
     }
 
-    private fun getPendingSelfIntent(context: Context?): PendingIntent? {
+    private fun getPendingSelfIntent(
+        context: Context?,
+        action: String = SYNC_CLICKED
+    ): PendingIntent? {
         val intent = Intent(context, javaClass)
-        intent.action = SYNC_CLICKED
+        intent.action = action
         return PendingIntent.getBroadcast(context, 0, intent, 0)
     }
 }

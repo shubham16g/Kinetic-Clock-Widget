@@ -12,16 +12,11 @@ import android.os.IBinder
 import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import android.content.Intent
-
-
-
 
 
 class RunnerService : Service() {
 
     companion object {
-        const val START_FOREGROUND_ACTION = "START_RRR"
         const val STOP_FOREGROUND_ACTION = "STOP_RRR"
 
         fun sendTimeTick(context: Context, data: Int) {
@@ -49,23 +44,22 @@ class RunnerService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
-                sendTimeTick(context, 1)
+                if (intent.action == Intent.ACTION_TIME_TICK)
+                    sendTimeTick(context, 1)
+                else if (intent.action == STOP_FOREGROUND_ACTION) {
+                    unregisterReceiver(this)
+                    stopForeground(true)
+                    stopSelfResult(startId)
+                }
             }
         }
-        if (intent?.action.equals(START_FOREGROUND_ACTION)) {
 
-            sendTimeTick(applicationContext, 1)
-            val filter = IntentFilter()
-            filter.addAction(Intent.ACTION_TIME_TICK)
-
-            registerReceiver(receiver, filter)
-
-            startForeground()
-        } else if (intent?.action.equals(STOP_FOREGROUND_ACTION)) {
-            stopForeground(true)
-//            unregisterReceiver(receiver)
-            stopSelfResult(startId)
-        }
+        sendTimeTick(applicationContext, 1)
+        val filter = IntentFilter()
+        filter.addAction(Intent.ACTION_TIME_TICK)
+        filter.addAction(STOP_FOREGROUND_ACTION)
+        registerReceiver(receiver, filter)
+        startForeground()
         return START_NOT_STICKY
     }
 

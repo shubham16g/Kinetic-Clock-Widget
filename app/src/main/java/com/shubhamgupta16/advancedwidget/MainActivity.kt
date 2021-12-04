@@ -16,14 +16,16 @@ import android.provider.Settings
 import android.util.DisplayMetrics
 import android.view.View
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import androidx.preference.PreferenceManager
 
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var btnBg: View
-    private lateinit var powerBtn: ImageButton
+    private lateinit var storageSwitch: SwitchCompat
+    private lateinit var backgroundSwitch: SwitchCompat
     private lateinit var settingsBtn: ImageButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         val sf = PreferenceManager.getDefaultSharedPreferences(this);
+        sf.edit().putBoolean("isAnimating", false).apply()
         if (sf.getBoolean("init", false)) {
             val editor = sf.edit()
             editor.putInt("pinsColor", Color.parseColor("#000000"))
@@ -39,20 +42,51 @@ class MainActivity : AppCompatActivity() {
             editor.apply()
         }
 
-        btnBg = findViewById(R.id.btn_bg)
-        powerBtn = findViewById(R.id.power_btn)
         settingsBtn = findViewById(R.id.settings_btn)
+        storageSwitch = findViewById(R.id.storageSwitch)
+        backgroundSwitch = findViewById(R.id.backgroundSwitch)
 
-        powerBtn.setOnClickListener {
-            if (isServiceRunning(RunnerService::class.java))
-                offService()
-            else
-                onService()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            storageSwitch.visibility = View.GONE
+            backgroundSwitch.visibility = View.GONE
+        } else {
+
+            storageSwitch.setOnClickListener {
+                if (storageSwitch.isChecked) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 12)
+                        storageSwitch.isChecked = false
+                    }
+                }
+            }
+            backgroundSwitch.setOnClickListener {
+                optionalAlwaysRunInBackground(backgroundSwitch.isChecked)
+            }
+
+
         }
+
         settingsBtn.setOnClickListener {
-            openSettings()
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
     }
+
+    @SuppressLint("BatteryLife")
+    private fun optionalAlwaysRunInBackground(isOnRequest: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Toast.makeText(this, "HERE", Toast.LENGTH_SHORT).show()
+            val intent = Intent()
+            if (isOnRequest) {
+                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+                intent.data = Uri.parse("package:$packageName")
+            } else {
+                intent.action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS;
+            }
+            intent.flags = FLAG_ACTIVITY_NEW_TASK
+            startActivity(intent)
+        }
+    }
+
 
     override fun onStart() {
         super.onStart()
@@ -60,63 +94,52 @@ class MainActivity : AppCompatActivity() {
             onUI()
         else
             offUI()
-    }
-
-    private fun offService() {
-        val i = Intent(this, RunnerService::class.java)
-        i.action = RunnerService.STOP_FOREGROUND_ACTION
-        startService(i)
-        offUI()
+        updateSwitchUI()
     }
 
     private fun offUI() {
-        btnBg.setBackgroundResource(R.drawable.background_power_bg_off)
         settingsBtn.alpha = 0.5f
         settingsBtn.elevation = 0f
         settingsBtn.isEnabled = false
     }
 
     private fun onUI() {
-        btnBg.setBackgroundResource(R.drawable.background_power_bg_on)
         settingsBtn.alpha = 1f
         settingsBtn.elevation = dpToPx(10)
         settingsBtn.isEnabled = true
     }
 
-    private fun onService() {
-        tryStoragePermissionAndEnable()
-    }
-
-    private fun openSettings() {
-        startActivity(Intent(this, SettingsActivity::class.java))
-    }
-
-    @SuppressLint("BatteryLife")
-    private fun tryStoragePermissionAndEnable(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val pm: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
-            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                val intent = Intent()
-                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-                intent.flags = FLAG_ACTIVITY_NEW_TASK
-                intent.data = Uri.parse("package:$packageName")
-                startActivity(intent)
-                return false
+    private fun updateSwitchUI() {
+        if (hasStoragePermission()){
+            storageSwitch.visibility = View.GONE
+        }
+        backgroundSwitch.isChecked = hasBackgroundPermission()
+        if (storageSwitch.visibility == View.GONE) {
+            if (!isServiceRunning(RunnerService::class.java)) {
+                val intent = Intent(this, RunnerService::class.java)
+                startService(intent)
+                onUI()
+                Toast.makeText(this, "Clock Enabled", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
 
+    private fun hasStoragePermission(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 12)
                 return false
             }
         }
-//        if (ids.isNotEmpty()) {
-        val i = Intent(this, RunnerService::class.java)
-        i.action = RunnerService.START_FOREGROUND_ACTION
-        startService(i)
-        onUI()
-//        } else{
-//            Toast.makeText(this, "No WIDGET found on Home Screen", Toast.LENGTH_SHORT).show()
-//        }
+        return true
+    }
+
+    private fun hasBackgroundPermission(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                return false
+            }
+        }
         return true
     }
 
@@ -127,7 +150,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED && requestCode == 12) {
-            tryStoragePermissionAndEnable()
+            updateSwitchUI()
         }
     }
 
