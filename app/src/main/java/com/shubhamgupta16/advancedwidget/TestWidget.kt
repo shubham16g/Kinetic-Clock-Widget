@@ -20,23 +20,28 @@ open class TestWidget : AppWidgetProvider() {
     companion object{
         private const val SYNC_CLICKED = "automaticWidgetSyncButtonClick"
         private const val ANIM_DEFAULT = -1
+        private const val TAG = "TestWidget"
         private const val ANIM_REARRANGE = 1
     }
     private lateinit var draw: Draw
 
     override fun onEnabled(context: Context?) {
         super.onEnabled(context)
-
-        if (context?.isServiceRunning(RunnerService::class.java) == true)
+        val isServiceRunning = context?.isServiceRunning(RunnerService::class.java)
+        if (isServiceRunning == true)
             updateAppWidget(context, AppWidgetManager.getInstance(context), ANIM_DEFAULT)
         else
             context?.let { updateRemoteView(null, it, AppWidgetManager.getInstance(context)) }
+        Log.d(TAG, "onEnabled: isServiceRunning: $isServiceRunning" )
+
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
+        Log.d(TAG, "onReceive: Called")
         if (context == null) return
 
+        Log.d(TAG, "onReceive: Action = ${intent?.action}")
 
         if (intent?.action == "update_my_clock") {
             Log.d("here", "update_my_clock")
@@ -62,7 +67,7 @@ open class TestWidget : AppWidgetProvider() {
         animType: Int
     ) {
         val editor = PreferenceManager.getDefaultSharedPreferences(context).edit()
-        Log.d("here2", "here2")
+        Log.d(TAG, "updateAppWidget: AnimType = $animType")
         if (!::draw.isInitialized)
             draw = Draw(context)
         val isByTime = draw.init()
