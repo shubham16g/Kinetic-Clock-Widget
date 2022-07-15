@@ -42,6 +42,7 @@
             android:layout_height="wrap_content"
             android:text="Storage Permission"/>
         <androidx.appcompat.widget.SwitchCompat
+            android:visibility="gone"
             android:id="@+id/backgroundSwitch"
             android:layout_width="match_parent"
             android:padding="10dp"

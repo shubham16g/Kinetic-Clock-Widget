@@ -1,10 +1,13 @@
 package com.shubhamgupta16.advancedwidget
 
+import android.Manifest
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.WallpaperManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.*
+import android.os.Build
 import android.renderscript.Allocation
 import android.renderscript.Element
 import android.renderscript.RenderScript
@@ -14,6 +17,7 @@ import android.util.Log
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.core.graphics.drawable.toBitmap
 import androidx.preference.PreferenceManager
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -26,6 +30,7 @@ class Draw(private val context: Context) {
         const val CLOCKS_WIDTH_FACTOR = 8.35f
         const val ANIM_DURATION = 5000L
     }
+    private val dateFormat = SimpleDateFormat("KKmm", Locale.getDefault())
 
     private lateinit var va: ValueAnimator
     private var currentSec = 1
@@ -65,37 +70,19 @@ class Draw(private val context: Context) {
 
         buildBG()
         val calendar = Calendar.getInstance()
-        currentTime = calendar.toTime()
+        currentTime = toTime(calendar.timeInMillis)
+        futureTime = toTime(calendar.timeInMillis + (1000 * 60))
         currentSec = calendar.get(Calendar.SECOND)
 
 //        Log.d("context", "${calendar.timeInMillis}")
-        calendar.timeInMillis += 1000 * 60
 //        Log.d("context 2", "${calendar.timeInMillis}")
-        futureTime = calendar.toTime()
         if (currentSec <= 1)
             return true
         return false
     }
 
-    private fun Calendar.toTime(): IntArray {
-        val currentTime = IntArray(4)
-        val hour = get(Calendar.HOUR)
-        val min = get(Calendar.MINUTE)
-        val sec = get(Calendar.SECOND)
-        currentTime[0] = (hour - hour % 10) / 10
-        currentTime[1] = hour - (currentTime[0] * 10)
-        if (currentTime[0] == 0 && currentTime[1] == 0) {
-            currentTime[0] = 1
-            currentTime[1] = 2
-        }
-        currentTime[2] = (min - min % 10) / 10
-        currentTime[3] = (min - (currentTime[2] * 10))
-        Log.d(
-            "Draw:",
-            "Time: $hour:$min:$sec -> ${currentTime[0]} ${currentTime[1]} ${currentTime[2]} ${currentTime[3]}"
-        )
-
-        return currentTime
+    private fun toTime(mills: Long): IntArray {
+        return dateFormat.format(mills).toList().map { it.toString().toInt() }.toIntArray()
     }
 
     private fun buildBG() {
@@ -109,27 +96,29 @@ class Draw(private val context: Context) {
 
             when (sf.getString("backgroundType", "solid_color")) {
                 "wall_blur" -> {
-                    val wallpaperManager = WallpaperManager.getInstance(context)
-                    val source = wallpaperManager.drawable.toBitmap(300, 300)
-                    val bgBitmap = Bitmap.createScaledBitmap(
-                        fastBlur16(
-                            Bitmap.createBitmap(
-                                source,
-                                source.width / 4,
-                                source.height / 6,
-                                source.width / 2,
-                                source.height / 3
-                            ), 14, context
-                        ), width, height, false
-                    )
-                    val alphaPaint = Paint()
-                    alphaPaint.alpha = sf.getInt("bgOpacity", 100) * 5
-                    canvas.drawBitmap(bgBitmap, 0f, 0f, alphaPaint)
-//                    overlay
-                    val overlayPaint = Paint()
-                    overlayPaint.color = Color.WHITE
-                    overlayPaint.alpha = 8
-                    canvas.drawRect(0f, 0f, baseBg.width.toFloat(), baseBg.height.toFloat(), overlayPaint)
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || context.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        val wallpaperManager = WallpaperManager.getInstance(context)
+                        val source = wallpaperManager.drawable.toBitmap(300, 300)
+                        val bgBitmap = Bitmap.createScaledBitmap(
+                            fastBlur16(
+                                Bitmap.createBitmap(
+                                    source,
+                                    source.width / 4,
+                                    source.height / 6,
+                                    source.width / 2,
+                                    source.height / 3
+                                ), 14, context
+                            ), width, height, false
+                        )
+                        val alphaPaint = Paint()
+                        alphaPaint.alpha = sf.getInt("bgOpacity", 100) * 5
+                        canvas.drawBitmap(bgBitmap, 0f, 0f, alphaPaint)
+                //                    overlay
+                        val overlayPaint = Paint()
+                        overlayPaint.color = Color.WHITE
+                        overlayPaint.alpha = 8
+                        canvas.drawRect(0f, 0f, baseBg.width.toFloat(), baseBg.height.toFloat(), overlayPaint)
+                    }
                 }
                 else -> {
                     val solidPaint = Paint()

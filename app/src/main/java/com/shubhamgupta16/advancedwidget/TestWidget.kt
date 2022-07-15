@@ -34,29 +34,32 @@ open class TestWidget : AppWidgetProvider() {
         super.onEnabled(context)
         if (context == null) return
         tryToEnableWidget(context)
+        val timeReceiver = TimeReceiver()
+        timeReceiver.init(context)
         updateAppWidget(context, ANIM_DEFAULT)
         Log.d(TAG, "onEnabled")
 
     }
 
     override fun onDisabled(context: Context?) {
+        context?.sendBroadcast(Intent(TimeReceiver.STOP_FOREGROUND_ACTION))
         super.onDisabled(context)
-        context?.sendBroadcast(Intent(RunnerService.STOP_FOREGROUND_ACTION))
 
     }
 
     private fun tryToEnableWidget(context: Context) {
-        val isServiceRunning = context.isServiceRunning(RunnerService::class.java)
-        if (!isServiceRunning) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                if (context.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    updateRemoteView(null, context, data = -1)
-                    return
-                }
-            }
-            val i = Intent(context, RunnerService::class.java)
-            context.startService(i)
-        }
+
+//        val isServiceRunning = context.isServiceRunning(RunnerService::class.java)
+//        if (!isServiceRunning) {
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                if (context.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//                    updateRemoteView(null, context, data = -1)
+//                    return
+//                }
+//            }
+//            val i = Intent(context, RunnerService::class.java)
+//            context.startService(i)
+//        }
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
