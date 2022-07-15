@@ -1,6 +1,5 @@
 package com.shubhamgupta16.advancedwidget
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -8,14 +7,14 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
 import androidx.preference.PreferenceManager
-import com.shubhamgupta16.advancedwidget.MainActivity.Companion.isServiceRunning
+import java.util.*
 
 
 open class TestWidget : AppWidgetProvider() {
@@ -34,20 +33,47 @@ open class TestWidget : AppWidgetProvider() {
         super.onEnabled(context)
         if (context == null) return
         tryToEnableWidget(context)
-        val timeReceiver = TimeReceiver()
-        timeReceiver.init(context)
+
+//        val timeReceiver = TimeReceiver()
+//        timeReceiver.init(context)
         updateAppWidget(context, ANIM_DEFAULT)
         Log.d(TAG, "onEnabled")
 
     }
 
     override fun onDisabled(context: Context?) {
-        context?.sendBroadcast(Intent(TimeReceiver.STOP_FOREGROUND_ACTION))
+//        context?.sendBroadcast(Intent(TimeReceiver.STOP_FOREGROUND_ACTION))
         super.onDisabled(context)
 
     }
 
     private fun tryToEnableWidget(context: Context) {
+
+        val h = Handler(Looper.getMainLooper())
+
+        fun run(long: Long) {
+            val r = {
+                Log.d(TAG, "onEnabled: Waah modi ji waah")
+                val sec = Calendar.getInstance().get(Calendar.SECOND)
+                if (long == 1000L) {
+                    if (sec == 0) {
+                        updateAppWidget(context, ANIM_DEFAULT)
+                        run(60000)
+                    } else {
+                        run(long)
+                    }
+                } else {
+                    updateAppWidget(context, ANIM_DEFAULT)
+                    run((60000 - sec).toLong())
+                }
+
+            }
+            if (long == 1000L)
+                h.removeCallbacks(r)
+            h.postDelayed(r, long)
+        }
+
+        run(1000)
 
 //        val isServiceRunning = context.isServiceRunning(RunnerService::class.java)
 //        if (!isServiceRunning) {

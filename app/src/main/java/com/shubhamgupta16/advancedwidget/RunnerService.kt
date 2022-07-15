@@ -27,9 +27,9 @@ class RunnerService : Service() {
                 )
             )
             if (ids.isNotEmpty()) {
-                val i = Intent(context, TestWidget::class.java).setAction("update_my_clock")
-                i.putExtra("data", data)
-                context.sendBroadcast(i)
+//                val i = Intent(context, TestWidget::class.java).setAction("update_my_clock")
+//                i.putExtra("data", data)
+//                context.sendBroadcast(i)
             }
         }
     }

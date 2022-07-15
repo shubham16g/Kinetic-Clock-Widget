@@ -90,11 +90,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (isServiceRunning(RunnerService::class.java))
-            onUI()
-        else
-            offUI()
-        updateSwitchUI()
+//        if (isServiceRunning(RunnerService::class.java))
+//            onUI()
+//        else
+//            offUI()
+//        updateSwitchUI()
     }
 
     private fun offUI() {
@@ -150,7 +150,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED && requestCode == 12) {
-            updateSwitchUI()
+//            updateSwitchUI()
         }
     }
 
