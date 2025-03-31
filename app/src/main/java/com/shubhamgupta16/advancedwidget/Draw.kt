@@ -98,7 +98,7 @@ class Draw(private val context: Context) {
                 "wall_blur" -> {
                     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || context.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                         val wallpaperManager = WallpaperManager.getInstance(context)
-                        val source = wallpaperManager.drawable.toBitmap(300, 300)
+                        val source = wallpaperManager.drawable?.toBitmap(300, 300) ?: return
                         val bgBitmap = Bitmap.createScaledBitmap(
                             fastBlur16(
                                 Bitmap.createBitmap(
@@ -183,7 +183,7 @@ class Draw(private val context: Context) {
     }
 
     private fun fastBlur16(source: Bitmap, radius: Int, ctx: Context): Bitmap {
-        val bitmap = source.copy(source.config, source.isMutable)
+        val bitmap = source.copy(source.config!!, source.isMutable)
         val rs = RenderScript.create(ctx)
         val input = Allocation.createFromBitmap(
             rs,

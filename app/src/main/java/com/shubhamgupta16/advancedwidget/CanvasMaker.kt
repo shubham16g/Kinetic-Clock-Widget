@@ -7,7 +7,7 @@ import kotlin.math.sin
 
 class CanvasMaker(baseBg: Bitmap, private val stroke: Float, private val size: Int, color: Int) {
 
-    private val bg:Bitmap = baseBg.copy(baseBg.config, baseBg.isMutable)
+    private val bg:Bitmap = baseBg.copy(baseBg.config!!, baseBg.isMutable)
     private val canvas: Canvas = Canvas(bg)
     private val paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
 

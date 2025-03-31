@@ -1,15 +1,15 @@
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    compileSdk 30
-
+    compileSdk 35
+    namespace "com.shubhamgupta16.advancedwidget"
     defaultConfig {
         applicationId "com.shubhamgupta16.advancedwidget"
         minSdk 21
-        targetSdk 30
+        targetSdk 35
         versionCode 1
         versionName "1.0"
 
