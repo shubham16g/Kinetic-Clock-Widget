@@ -179,7 +179,7 @@ open class TestWidget : AppWidgetProvider() {
         } else {
             views.setViewVisibility(R.id.testText, View.GONE)
             views.setViewVisibility(R.id.image, View.VISIBLE)
-            views.setOnClickPendingIntent(R.id.image, getPendingSelfIntent(context))
+//            views.setOnClickPendingIntent(R.id.image, getPendingSelfIntent(context))
             views.setImageViewBitmap(R.id.image, b)
         }
         appWidgetManager.updateAppWidget(

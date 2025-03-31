@@ -3,9 +3,11 @@ package com.shubhamgupta16.advancedwidget
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.ActivityManager
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
@@ -16,10 +18,13 @@ import android.provider.Settings
 import android.util.DisplayMetrics
 import android.view.View
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.preference.PreferenceManager
+import com.shubhamgupta16.advancedwidget.RunnerService.Companion.STOP_FOREGROUND_ACTION
+import com.shubhamgupta16.advancedwidget.RunnerService.Companion.sendTimeTick
 
 
 class MainActivity : AppCompatActivity() {
@@ -27,6 +32,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var storageSwitch: SwitchCompat
     private lateinit var backgroundSwitch: SwitchCompat
     private lateinit var settingsBtn: ImageButton
+    private lateinit var image: ImageView
+    private lateinit var draw: Draw
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +52,8 @@ class MainActivity : AppCompatActivity() {
         settingsBtn = findViewById(R.id.settings_btn)
         storageSwitch = findViewById(R.id.storageSwitch)
         backgroundSwitch = findViewById(R.id.backgroundSwitch)
+        image = findViewById(R.id.image)
+        draw = Draw(this)
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             storageSwitch.visibility = View.GONE
@@ -62,8 +71,6 @@ class MainActivity : AppCompatActivity() {
             backgroundSwitch.setOnClickListener {
                 optionalAlwaysRunInBackground(backgroundSwitch.isChecked)
             }
-
-
         }
 
         settingsBtn.setOnClickListener {
@@ -85,16 +92,53 @@ class MainActivity : AppCompatActivity() {
             intent.flags = FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
         }
+        receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                if (intent.action == Intent.ACTION_TIME_TICK)
+                    _updateImage()
+                else if (intent.action == STOP_FOREGROUND_ACTION) {
+                    unregisterReceiver(this)
+//                    stopForeground(true)
+//                    stopSelfResult(startId)
+                }
+            }
+        }
+        registerReceiver(receiver, IntentFilter().apply {
+            addAction(Intent.ACTION_TIME_TICK)
+            addAction(STOP_FOREGROUND_ACTION)
+        })
     }
+
+    private lateinit var receiver: BroadcastReceiver
 
 
     override fun onStart() {
         super.onStart()
+        _updateImage()
 //        if (isServiceRunning(RunnerService::class.java))
 //            onUI()
 //        else
 //            offUI()
 //        updateSwitchUI()
+    }
+
+    private fun _updateImage() {
+        val isByTime = draw.init()
+        if (isByTime) {
+            draw.drawAnim { fraction ->
+                if (fraction == 0f || fraction == 1f) {
+//                    editor.putBoolean("isAnimating", fraction == 0f).apply()
+                }
+                image.setImageBitmap(draw.createTimeClockFrame(fraction))
+            }
+        } else {
+            image.setImageBitmap(draw.createStaticTimeClock())
+        }
+    }
+
+    override fun onDestroy() {
+        unregisterReceiver(receiver)
+        super.onDestroy()
     }
 
     private fun offUI() {
