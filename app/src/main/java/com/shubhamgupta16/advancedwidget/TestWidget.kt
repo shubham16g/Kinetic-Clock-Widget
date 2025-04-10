@@ -81,7 +81,6 @@ class TestWidget : AppWidgetProvider() {
             // Launch settings activity for configuration
             val intent = Intent(context, SettingsActivity::class.java).apply {
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-                putExtra(SettingsActivity.EXTRA_WIDGET_ID, appWidgetId)
                 // Add this flag to ensure a new instance is created each time
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
@@ -131,7 +130,7 @@ class TestWidget : AppWidgetProvider() {
         appWidgetId: Int, newOptions: Bundle
     ) {
         Log.d(TAG, "onAppWidgetOptionsChanged: Called")
-        if (draw == null) draw = Draw(context)
+        if (draw == null) draw = Draw(context, appWidgetId)
         draw!!.init()
         val views = updateRemoteView(context, appWidgetId, draw!!.createStaticTimeClock())
         appWidgetManager.updateAppWidget(appWidgetId, views)
@@ -196,7 +195,7 @@ class TestWidget : AppWidgetProvider() {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)
             Log.d(TAG, "updateAppWidget: ")
             Log.d(TAG, "updateAppWidget: animType")
-            val draw = Draw(context)
+            val draw = Draw(context, appWidgetId)
             val isByTime = draw.init()
             if (action == WIDGET_CLICK) {
                 draw.drawAnim { fraction ->
@@ -241,7 +240,6 @@ class TestWidget : AppWidgetProvider() {
             id: Int,
             b: Bitmap?,
         ): RemoteViews {
-            Log.d(TAG, "updateRemoteView: Called")
             val views = RemoteViews(context.packageName, R.layout.test_widget)
             if (b == null) {
                 views.setViewVisibility(R.id.testText, View.VISIBLE)
