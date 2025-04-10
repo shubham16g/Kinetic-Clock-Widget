@@ -28,6 +28,8 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
         const val CLOCKS_HEIGHT_FACTOR = 12.35f
         const val CLOCKS_WIDTH_FACTOR = 8.35f
         const val ANIM_DURATION = 5000L
+
+        private const val TAG = "Draw"
     }
 
     private val dateFormat = SimpleDateFormat("KKmm", Locale.getDefault())
@@ -103,9 +105,14 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
 
             when (getPreference("backgroundType", "solid_color")) {
                 "wall_blur" -> {
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || context.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+
+                    if (true) {
                         val wallpaperManager = WallpaperManager.getInstance(context)
-                        val source = wallpaperManager.drawable?.toBitmap(300, 300) ?: return
+                        val source = wallpaperManager.drawable?.toBitmap(300, 300)
+                        if (source == null) {
+                            Log.d(TAG, "buildBG: Wallpaper is null")
+                            return
+                        }
                         val bgBitmap = Bitmap.createScaledBitmap(
                             fastBlur16(
                                 Bitmap.createBitmap(
