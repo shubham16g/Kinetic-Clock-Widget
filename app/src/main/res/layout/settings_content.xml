@@ -14,10 +14,10 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
             android:text="@string/background"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:paddingBottom="8dp" />
+            android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -47,8 +47,8 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Background Type"
-                android:paddingTop="8dp" />
+                android:paddingTop="8dp"
+                android:text="Background Type" />
 
             <Spinner
                 android:id="@+id/spinner_background_type"
@@ -57,47 +57,55 @@
                 android:layout_marginTop="4dp"
                 android:minHeight="48dp" />
 
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp">
+
+                <TextView
+                    android:layout_centerVertical="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Background Color" />
+
+                <ImageButton
+                    android:id="@+id/btn_bg_color"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp" />
+            </RelativeLayout>
+
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Background Color"
-                android:paddingTop="16dp" />
-
-            <Button
-                android:id="@+id/btn_bg_color"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:text="Select Color" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Background Opacity"
-                android:paddingTop="16dp" />
+                android:paddingTop="16dp"
+                android:text="Background Opacity" />
 
             <SeekBar
                 android:id="@+id/seekbar_bg_opacity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:max="100"
-                android:progress="100"
-                android:minHeight="48dp" />
+                android:minHeight="48dp"
+                android:progress="100" />
         </LinearLayout>
 
         <!-- Clocks Section -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#DDDDDD"
-            android:layout_marginVertical="16dp" />
+            android:layout_marginVertical="16dp"
+            android:background="#DDDDDD" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
             android:text="@string/clocks"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:paddingBottom="8dp" />
+            android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -121,42 +129,50 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Clocks Opacity"
-            android:paddingTop="8dp" />
+            android:paddingTop="8dp"
+            android:text="Clocks Opacity" />
 
         <SeekBar
             android:id="@+id/seekbar_clocks_opacity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:max="100"
-            android:progress="40"
-            android:minHeight="48dp" />
+            android:minHeight="48dp"
+            android:progress="40" />
 
         <!-- Pins Section -->
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#DDDDDD"
-            android:layout_marginVertical="16dp" />
+            android:layout_marginVertical="16dp"
+            android:background="#DDDDDD" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
             android:text="@string/pins"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:paddingBottom="8dp" />
+            android:textStyle="bold" />
 
-        <TextView
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Pins Color"
-            android:paddingTop="8dp" />
+            android:layout_marginTop="16dp">
 
-        <Button
-            android:id="@+id/btn_pins_color"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:text="Select Color" />
+            <TextView
+                android:layout_centerVertical="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pins Color" />
+
+            <ImageButton
+                android:id="@+id/btn_pins_color"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_width="48dp"
+                android:layout_height="48dp"/>
+        </RelativeLayout>
+
     </LinearLayout>
 </ScrollView>
