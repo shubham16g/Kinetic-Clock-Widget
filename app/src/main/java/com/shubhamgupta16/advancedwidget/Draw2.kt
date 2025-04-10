@@ -25,26 +25,20 @@ class Sf(private val context: Context) {
 
     fun stroke(widgetId: Int): Float = sf.getFloat("stroke_$widgetId", size(widgetId) / 15f)
 
-    fun color(widgetId: Int): Int
-         = sf.getInt("pinsColor_$widgetId", Color.BLACK)
+    fun color(widgetId: Int): Int = sf.getInt("pinsColor_$widgetId", Color.BLACK)
 
-    fun showBackground(widgetId: Int): Boolean
-         = sf.getBoolean("showBackground_$widgetId", true)
+    fun showBackground(widgetId: Int): Boolean = sf.getBoolean("showBackground_$widgetId", true)
 
-    fun backgroundType(widgetId: Int): String
-         = sf.getString("backgroundType_$widgetId", "solid_color") ?: "solid_color"
+    fun backgroundType(widgetId: Int): String =
+        sf.getString("backgroundType_$widgetId", "solid_color") ?: "solid_color"
 
-    fun bgOpacity(widgetId: Int): Int
-         = sf.getInt("bgOpacity_$widgetId", 100)
+    fun bgOpacity(widgetId: Int): Int = sf.getInt("bgOpacity_$widgetId", 100)
 
-    fun bgColor(widgetId: Int): Int
-            = sf.getInt("bgColor_$widgetId", Color.WHITE)
+    fun bgColor(widgetId: Int): Int = sf.getInt("bgColor_$widgetId", Color.WHITE)
 
-    fun showClocks(widgetId: Int): Boolean
-            = sf.getBoolean("showClocks_$widgetId", true)
+    fun showClocks(widgetId: Int): Boolean = sf.getBoolean("showClocks_$widgetId", true)
 
-    fun clocksOpacity(widgetId: Int): Int
-            = sf.getInt("clocksOpacity_$widgetId", 40)
+    fun clocksOpacity(widgetId: Int): Int = sf.getInt("clocksOpacity_$widgetId", 40)
 
 
     fun getAnimProgress(widgetId: Int): Long {
@@ -71,9 +65,8 @@ object Draw2 {
     const val ANIM_DURATION = 5000L
 
 
-    private lateinit var va: ValueAnimator
-    private var currentSec = 1
-
+//    private lateinit var va: ValueAnimator
+//    private var currentSec = 1
 
 
     private val dateFormat = SimpleDateFormat("KKmm", Locale.getDefault())
@@ -82,23 +75,25 @@ object Draw2 {
     }
 
     @SuppressLint("Recycle")
-    fun drawAnim(sf: Sf, widgetId: Int, listener: (fraction: Float) -> Unit) {
+    fun drawAnim(sf: Sf, widgetId: Int, listener: (fraction: Float, currentSec: Int) -> Unit) {
         val animProgress: Long = sf.getAnimProgress(widgetId)
 
 
         if (animProgress > 0 && animProgress + ANIM_DURATION > System.currentTimeMillis()) {
             return
         }
-        if (!::va.isInitialized) {
-            va = ValueAnimator.ofFloat(0f, 1f)
-            va.duration = ANIM_DURATION
-            va.interpolator = AccelerateDecelerateInterpolator()
-        }
+
+        val va = ValueAnimator.ofFloat(0f, 1f)
+        va.duration = ANIM_DURATION
+        va.interpolator = AccelerateDecelerateInterpolator()
+
         va.pause()
         va.removeAllUpdateListeners()
         sf.setAnimProgress(widgetId, System.currentTimeMillis())
+        val calendar = Calendar.getInstance()
+        val currentSec = calendar.get(Calendar.SECOND)
         va.addUpdateListener { animation ->
-            listener(animation.animatedFraction)
+            listener(animation.animatedFraction, currentSec)
             if (animation.animatedFraction == 1f) {
                 va.removeAllUpdateListeners()
                 sf.setAnimProgress(widgetId, -1)
@@ -115,7 +110,7 @@ object Draw2 {
         val calendar = Calendar.getInstance()
 //        currentTime = toTime(calendar.timeInMillis)
 //        futureTime = toTime(calendar.timeInMillis + (1000 * 60))
-        currentSec = calendar.get(Calendar.SECOND)
+        val currentSec = calendar.get(Calendar.SECOND)
 
         if (currentSec <= 1) return true
         return false
@@ -132,7 +127,6 @@ object Draw2 {
             val calendar = Calendar.getInstance()
             return toTime(calendar.timeInMillis + (1000 * 60))
         }
-
 
 
     fun buildBG(context: Context, sf: Sf, widgetId: Int): Bitmap {
@@ -207,6 +201,7 @@ object Draw2 {
         currentTime: IntArray,
         futureTime: IntArray,
         fraction: Float,
+        currentSec: Int,
         isReArrange: Boolean = false
     ): Bitmap {
         val mu = CanvasMaker(baseBg, sf.stroke(widgetId), sf.size(widgetId), sf.color(widgetId))
@@ -232,7 +227,12 @@ object Draw2 {
         return mu.getBitmap(dpToPx(8))
     }
 
-    fun createStaticTimeClock(baseBg: Bitmap, sf: Sf, widgetId: Int, currentTime: IntArray): Bitmap {
+    fun createStaticTimeClock(
+        baseBg: Bitmap,
+        sf: Sf,
+        widgetId: Int,
+        currentTime: IntArray
+    ): Bitmap {
         val mu = CanvasMaker(baseBg, sf.stroke(widgetId), sf.size(widgetId), sf.color(widgetId))
         mu.drawClocks(
             ClockData.getLargeArray(currentTime[0]),

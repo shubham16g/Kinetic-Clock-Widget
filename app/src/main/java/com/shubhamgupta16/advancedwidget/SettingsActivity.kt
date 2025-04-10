@@ -2,6 +2,7 @@ package com.shubhamgupta16.advancedwidget
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID
+import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
@@ -15,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import yuku.ambilwarna.AmbilWarnaDialog
+
 
 private const val TAG = "SettingsActivity"
 
@@ -70,6 +72,11 @@ class SettingsActivity : AppCompatActivity() {
 
         // Set up listeners
         setupEventListeners()
+
+        val intent = Intent()
+        intent.putExtra(EXTRA_APPWIDGET_ID, widgetId)
+        setResult(RESULT_OK, intent)
+        sendBroadcast(intent)
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -254,6 +261,6 @@ class SettingsActivity : AppCompatActivity() {
         if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
 
         val appWidgetManager = AppWidgetManager.getInstance(this)
-//        TestWidget.updateAppWidget(this, Sf(this), appWidgetManager, TestWidget.SETTINGS_KICK, widgetId)
+        TestWidget.updateAppWidget(this, Sf(this), appWidgetManager, TestWidget.SETTINGS_KICK, widgetId)
     }
 }

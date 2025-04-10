@@ -210,7 +210,8 @@ class TestWidget : AppWidgetProvider() {
             val futureTime = Draw2.futureTime
             val baseBg = Draw2.buildBG(context, sf, appWidgetId)
             if (action == WIDGET_CLICK) {
-                Draw2.drawAnim(sf, appWidgetId) { fraction ->
+                Draw2.drawAnim(sf, appWidgetId) { fraction, currentSec ->
+                    Log.d(TAG, "updateAppWidget: xxxx")
                     appWidgetManager.updateAppWidget(
                         appWidgetId,
                         updateRemoteView(
@@ -223,6 +224,7 @@ class TestWidget : AppWidgetProvider() {
                                 currentTime,
                                 futureTime,
                                 fraction,
+                                currentSec,
                                 isReArrange = true
                             )
                         )
@@ -230,7 +232,8 @@ class TestWidget : AppWidgetProvider() {
                 }
             } else
                 if (isByTime) {
-                    Draw2.drawAnim(sf, appWidgetId) { fraction ->
+                    Draw2.drawAnim(sf, appWidgetId) { fraction, currentSec ->
+                        Log.d(TAG, "updateAppWidget: xxxxx")
                         appWidgetManager.updateAppWidget(
                             appWidgetId,
                             updateRemoteView(
@@ -242,7 +245,8 @@ class TestWidget : AppWidgetProvider() {
                                     appWidgetId,
                                     currentTime,
                                     futureTime,
-                                    fraction
+                                    fraction,
+                                    currentSec,
                                 )
                             )
                         )
@@ -250,7 +254,11 @@ class TestWidget : AppWidgetProvider() {
                 } else {
                     appWidgetManager.updateAppWidget(
                         appWidgetId,
-                        updateRemoteView(context, appWidgetId, Draw2.createStaticTimeClock(baseBg, sf, appWidgetId, currentTime))
+                        updateRemoteView(
+                            context,
+                            appWidgetId,
+                            Draw2.createStaticTimeClock(baseBg, sf, appWidgetId, currentTime)
+                        )
                     )
                 }
         }
