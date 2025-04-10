@@ -38,11 +38,12 @@ class TestWidget : AppWidgetProvider() {
         for (appWidgetId in appWidgetIds!!) {
             Log.d(TAG, "onTick: appWidgetId = $appWidgetId")
             updateAppWidget(context, appWidgetManager, action, appWidgetId)
+            
+            // Set an individual alarm for this specific widget
+            val pendingIntent = getPendingIntent(context, intArrayOf(appWidgetId), MINUTE_TICK)
+            alarmPendingIntents[appWidgetId] = pendingIntent
+            setAlarmForWidget(context, appWidgetId)
         }
-
-        val allAppWidgetIds = AppWidgetManager.getInstance(context).getAppWidgetIds(widgetName)
-        alarmPendingIntent = getPendingIntent(context, allAppWidgetIds, MINUTE_TICK)
-        setAlarm(context)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -88,19 +89,41 @@ class TestWidget : AppWidgetProvider() {
             // First update the widget with default settings
             updateAppWidget(context, appWidgetManager, SETTINGS_KICK, appWidgetId)
             
+            // Create a specific alarm for this widget
+            val pendingIntent = getPendingIntent(context, intArrayOf(appWidgetId), MINUTE_TICK)
+            alarmPendingIntents[appWidgetId] = pendingIntent
+            setAlarmForWidget(context, appWidgetId)
+            
             // Start the configuration activity
             context.startActivity(intent)
         }
     }
 
     override fun onEnabled(context: Context) {
-        setAlarm(context, Calendar.getInstance().timeInMillis)
+        // This is called when the first widget is added
+        // No need to set an alarm here as it will be set in onUpdate
     }
 
     override fun onDisabled(context: Context) {
-        if (alarmManager != null && alarmPendingIntent != null) {
-            alarmManager!!.cancel(alarmPendingIntent!!)
+        // This is called when the last widget is removed
+        // Cancel all alarms
+        val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        for (pendingIntent in alarmPendingIntents.values) {
+            alarmMgr.cancel(pendingIntent)
         }
+        alarmPendingIntents.clear()
+    }
+    
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        // Called when widgets are deleted
+        val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        for (appWidgetId in appWidgetIds) {
+            alarmPendingIntents[appWidgetId]?.let { 
+                alarmMgr.cancel(it)
+                alarmPendingIntents.remove(appWidgetId)
+            }
+        }
+        super.onDeleted(context, appWidgetIds)
     }
 
     override fun onAppWidgetOptionsChanged(
@@ -115,8 +138,8 @@ class TestWidget : AppWidgetProvider() {
     }
 
     companion object {
-        var alarmManager: AlarmManager? = null
-        var alarmPendingIntent: PendingIntent? = null
+        // Use a map to store widget-specific pending intents
+        private val alarmPendingIntents = HashMap<Int, PendingIntent>()
 
         const val MINUTE_TICK: String = "com.shubhamgupta16.advancedwidget.MINUTE_TICK"
         const val SETTINGS_KICK: String = "com.shubhamgupta16.advancedwidget.SETTINGS_KICK"
@@ -135,31 +158,32 @@ class TestWidget : AppWidgetProvider() {
             val tickIntent = Intent(context, TestWidget::class.java)
             tickIntent.setAction(action)
             tickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
+            
+            // Using the first widget ID as the request code to ensure uniqueness
+            // for multiple widget instances
+            val requestCode = if (appWidgetIds.isNotEmpty()) appWidgetIds[0] else 0
+            
             return PendingIntent.getBroadcast(
                 context,
-                0,
+                requestCode,
                 tickIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         }
 
-        private fun setAlarm(context: Context) {
+        private fun setAlarmForWidget(context: Context, appWidgetId: Int) {
             val cal = Calendar.getInstance()
             cal.add(Calendar.MINUTE, 1)
             cal[Calendar.SECOND] = 0
             val t = cal.timeInMillis
-            setAlarm(context, t)
-        }
-
-        private fun setAlarm(context: Context, targetTime: Long) {
-            if (alarmManager == null) {
-                alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            }
-
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R || alarmManager!!.canScheduleExactAlarms()) {
-                alarmManager!!.setExact(AlarmManager.RTC, targetTime, alarmPendingIntent!!)
+            
+            val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val pendingIntent = alarmPendingIntents[appWidgetId] ?: return
+            
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R || alarmMgr.canScheduleExactAlarms()) {
+                alarmMgr.setExact(AlarmManager.RTC, t, pendingIntent)
             } else {
-                alarmManager!![AlarmManager.RTC, targetTime] = alarmPendingIntent!!
+                alarmMgr[AlarmManager.RTC, t] = pendingIntent
             }
         }
 
@@ -177,7 +201,7 @@ class TestWidget : AppWidgetProvider() {
             if (action == WIDGET_CLICK) {
                 draw.drawAnim { fraction ->
                     if (fraction == 0f || fraction == 1f) {
-                        sp.edit().putBoolean("isAnimating", fraction == 0f).apply()
+                        sp.edit().putBoolean("isAnimating_$appWidgetId", fraction == 0f).apply()
                     }
                     appWidgetManager.updateAppWidget(
                         appWidgetId,
@@ -192,7 +216,7 @@ class TestWidget : AppWidgetProvider() {
                 if (isByTime) {
                     draw.drawAnim { fraction ->
                         if (fraction == 0f || fraction == 1f) {
-                            sp.edit().putBoolean("isAnimating", fraction == 0f).apply()
+                            sp.edit().putBoolean("isAnimating_$appWidgetId", fraction == 0f).apply()
                         }
                         appWidgetManager.updateAppWidget(
                             appWidgetId,
