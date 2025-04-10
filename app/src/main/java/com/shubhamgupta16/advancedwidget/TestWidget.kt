@@ -13,7 +13,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
-import androidx.preference.PreferenceManager
 import java.util.Calendar
 
 /** @noinspection SpellCheckingInspection
@@ -192,16 +191,13 @@ class TestWidget : AppWidgetProvider() {
             action: String,
             appWidgetId: Int
         ) {
-            val sp = PreferenceManager.getDefaultSharedPreferences(context)
+
             Log.d(TAG, "updateAppWidget: ")
             Log.d(TAG, "updateAppWidget: animType")
             val draw = Draw(context, appWidgetId)
             val isByTime = draw.init()
             if (action == WIDGET_CLICK) {
                 draw.drawAnim { fraction ->
-                    if (fraction == 0f || fraction == 1f) {
-                        sp.edit().putBoolean("isAnimating_$appWidgetId", fraction == 0f).apply()
-                    }
                     appWidgetManager.updateAppWidget(
                         appWidgetId,
                         updateRemoteView(
@@ -214,9 +210,6 @@ class TestWidget : AppWidgetProvider() {
             } else
                 if (isByTime) {
                     draw.drawAnim { fraction ->
-                        if (fraction == 0f || fraction == 1f) {
-                            sp.edit().putBoolean("isAnimating_$appWidgetId", fraction == 0f).apply()
-                        }
                         appWidgetManager.updateAppWidget(
                             appWidgetId,
                             updateRemoteView(

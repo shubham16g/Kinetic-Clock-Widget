@@ -39,6 +39,8 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
     private val color: Int = context.getSharedPreferences("widget_$widgetId", 0)
         .getInt("pinsColor", Color.parseColor("#000000"))
 
+    private val sf = context.getSharedPreferences("widget_$widgetId", 0)
+
     private val size: Int =
         context.getSharedPreferences("widget_$widgetId", 0).getInt("size", dpToPx(15).toInt())
 
@@ -55,10 +57,19 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
         context.getSharedPreferences("widget_$widgetId", 0).getString(key, defaultValue)
             ?: defaultValue
 
+    private fun getPreference(key: String, defaultValue: Long): Long =
+        context.getSharedPreferences("widget_$widgetId", 0).getLong(key, defaultValue)
+
     private lateinit var baseBg: Bitmap
 
     @SuppressLint("Recycle")
     fun drawAnim(listener: (fraction: Float) -> Unit) {
+        val animProgress: Long = getPreference("animProgress", -1L)
+
+
+        if (animProgress > 0 && animProgress + ANIM_DURATION > System.currentTimeMillis()) {
+            return
+        }
         if (!::va.isInitialized) {
             va = ValueAnimator.ofFloat(0f, 1f)
             va.duration = ANIM_DURATION
@@ -66,10 +77,13 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
         }
         va.pause()
         va.removeAllUpdateListeners()
+        sf.edit().putLong("animProgress", System.currentTimeMillis()).apply()
         va.addUpdateListener { animation ->
             listener(animation.animatedFraction)
             if (animation.animatedFraction == 1f) {
                 va.removeAllUpdateListeners()
+                sf.edit().putLong("animProgress", -1).apply()
+
             }
         }
         va.start()
