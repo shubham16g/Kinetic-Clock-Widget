@@ -1,22 +1,16 @@
 package com.shubhamgupta16.advancedwidget
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Context
-import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
+import android.graphics.Color
 import android.os.Bundle
-import android.os.Environment
-import android.os.PowerManager
-import android.provider.Settings
-import android.util.Log
+import android.view.View
 import android.widget.Toast
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
-import androidx.core.app.ActivityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 
 
 private const val TAG = "MainActivity"
@@ -28,7 +22,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+        ViewCompat.setOnApplyWindowInsetsListener(
+            findViewById(R.id.appbar)
+        ) { v: View, insets: WindowInsetsCompat ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(0, systemBars.top, 0, 0)
+            insets
+        }
+
 
         val storageSwitch = findViewById<SwitchCompat>(R.id.storageSwitch)
         val backgroundSwitch = findViewById<SwitchCompat>(R.id.backgroundSwitch)
