@@ -47,7 +47,8 @@
 
         <activity
             android:name="com.shubhamgupta16.advancedwidget.SettingsActivity"
-            android:exported="true"
+            android:exported="false"
+            android:excludeFromRecents="true"
             android:label="@string/title_widget_settings"
             android:theme="@style/Theme.AdvancedWidget">
             <intent-filter>

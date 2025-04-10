@@ -1,172 +1,242 @@
 package com.shubhamgupta16.advancedwidget
 
 import android.appwidget.AppWidgetManager
-import android.content.Intent
+import android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID
 import android.content.SharedPreferences
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
+import androidx.appcompat.widget.SwitchCompat
+import androidx.core.content.ContextCompat
+import yuku.ambilwarna.AmbilWarnaDialog
 
-
+private const val TAG = "SettingsActivity"
 class SettingsActivity : AppCompatActivity() {
     
-    companion object {
-        const val EXTRA_WIDGET_ID = "widget_id"
-    }
-    
     private var widgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
+    private lateinit var widgetPrefs: SharedPreferences
+    
+    // UI elements
+    private lateinit var showBackgroundSwitch: SwitchCompat
+    private lateinit var backgroundSettingsGroup: LinearLayout
+    private lateinit var backgroundTypeSpinner: Spinner
+    private lateinit var bgColorButton: Button
+    private lateinit var bgOpacitySeekBar: SeekBar
+    private lateinit var showClocksSwitch: SwitchCompat
+    private lateinit var clocksOpacitySeekBar: SeekBar
+    private lateinit var pinsColorButton: Button
+    
+    // Current values
+    private var bgColor: Int = Color.WHITE
+    private var pinsColor: Int = Color.BLACK
 
-    override fun onBackPressed() {
-        finishWithResult()
-        super.onBackPressed()
-    }
 
-
-
-    private fun finishWithResult() {
-        // Set the result to OK and include the widget ID
-        val resultValue = Intent().apply {
-            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
-        }
-        setResult(RESULT_OK, resultValue)
-
-        // Update the widget one final time before closing
-        val appWidgetManager = AppWidgetManager.getInstance(this)
-        TestWidget.updateAppWidget(this, appWidgetManager, TestWidget.SETTINGS_KICK, widgetId)
-    }
-
-    override fun onDestroy() {
-        // Remove this code from onDestroy - setting result here is too late
-        // if (isFinishing) {
-        //     val resultValue = Intent().apply {
-        //         putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
-        //     }
-        //     setResult(RESULT_OK, resultValue)
-        //
-        //     TestWidget.configureWidget(this, widgetId)
-        // }
-        super.onDestroy()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.settings_activity)
         
         // Get widget ID from intent
-        widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+        widgetId = intent.getIntExtra(EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+        Log.d(TAG, "onCreate: widgetId: $widgetId")
         
-        if (savedInstanceState == null) {
-            val fragment = SettingsFragment().apply {
-                arguments = Bundle().apply {
-                    putInt(EXTRA_WIDGET_ID, widgetId)
-                }
-            }
-            
-            supportFragmentManager
-                .beginTransaction()
-                .replace(R.id.settings, fragment)
-                .commit()
-        }
-
+        // Initialize widget preferences
+        widgetPrefs = getSharedPreferences("widget_$widgetId", 0)
+        
+        // Setup toolbar
         setSupportActionBar(findViewById(R.id.toolbar))
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         title = if (widgetId != -1) "Widget $widgetId Settings" else "Widget Settings"
+        
+        // Initialize UI elements
+        initializeUiElements()
+        
+        // Load saved preferences
+        loadSavedPreferences()
+        
+        // Set up listeners
+        setupEventListeners()
     }
-
+    
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
     }
-
-    class SettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
+    
+    private fun initializeUiElements() {
+        // Background settings
+        showBackgroundSwitch = findViewById(R.id.switch_show_background)
+        backgroundSettingsGroup = findViewById(R.id.background_settings_group)
+        backgroundTypeSpinner = findViewById(R.id.spinner_background_type)
+        bgColorButton = findViewById(R.id.btn_bg_color)
+        bgOpacitySeekBar = findViewById(R.id.seekbar_bg_opacity)
         
-        private var widgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
-
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
-            arguments?.let {
-                widgetId = it.getInt(EXTRA_WIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
-            }
-        }
+        // Clock settings
+        showClocksSwitch = findViewById(R.id.switch_show_clocks)
+        clocksOpacitySeekBar = findViewById(R.id.seekbar_clocks_opacity)
         
-        override fun onResume() {
-            super.onResume()
-            preferenceManager.sharedPreferences.registerOnSharedPreferenceChangeListener(this)
+        // Pins settings
+        pinsColorButton = findViewById(R.id.btn_pins_color)
+        
+        // Setup spinner
+        ArrayAdapter.createFromResource(
+            this,
+            R.array.reply_entries,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            backgroundTypeSpinner.adapter = adapter
         }
-
-        override fun onPause() {
-            preferenceManager.sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
-            super.onPause()
-        }
-
-        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-            setPreferencesFromResource(R.xml.root_preferences, rootKey)
-        }
-
-        override fun onPreferenceTreeClick(preference: Preference?): Boolean {
-            return super.onPreferenceTreeClick(preference)
-        }
-
-        override fun onSharedPreferenceChanged(
-            sharedPreferences: SharedPreferences?,
-            key: String?
-        ) {
-            Log.d("WidgetSettings", "Updating widget $widgetId for key: $key")
-
-            if (key == null || sharedPreferences == null || widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
-
-            // Get the new value based on type and save it to widget-specific preferences
-            when (val preference = findPreference<Preference>(key)) {
-                is androidx.preference.CheckBoxPreference -> {
-                    val value = sharedPreferences.getBoolean(key, false)
-                    saveWidgetPreference(key, value)
-                }
-                is androidx.preference.EditTextPreference -> {
-                    val value = sharedPreferences.getString(key, "") ?: ""
-                    saveWidgetPreference(key, value)
-                }
-                is androidx.preference.ListPreference -> {
-                    val value = sharedPreferences.getString(key, "") ?: ""
-                    saveWidgetPreference(key, value)
-                }
-                else -> {
-                    // Handle other preference types as needed
-                    if (preference != null) {
-                        Log.d("WidgetSettings", "Unhandled preference type: ${preference.javaClass.simpleName}")
-                    }
-                }
-            }
-
-            // Update the widget immediately to reflect changes
-            context?.let { ctx ->
-                val appWidgetManager = AppWidgetManager.getInstance(ctx)
-                TestWidget.updateAppWidget(ctx, appWidgetManager, TestWidget.SETTINGS_KICK, widgetId)
-            }
+    }
+    
+    private fun loadSavedPreferences() {
+        // Load background settings
+        val showBackground = widgetPrefs.getBoolean("showBackground", true)
+        showBackgroundSwitch.isChecked = showBackground
+        backgroundSettingsGroup.visibility = if (showBackground) View.VISIBLE else View.GONE
+        
+        // Load background type
+        val backgroundType = widgetPrefs.getString("backgroundType", "solid_color") ?: "solid_color"
+        val backgroundTypePosition = resources.getStringArray(R.array.reply_values).indexOf(backgroundType)
+        if (backgroundTypePosition != -1) {
+            backgroundTypeSpinner.setSelection(backgroundTypePosition)
         }
         
-        // Save widget-specific preferences
-        private fun saveWidgetPreference(key: String, value: Any) {
-            if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
+        // Load background color
+        bgColor = widgetPrefs.getInt("bgColor", ContextCompat.getColor(this, R.color.white))
+        updateColorButton(bgColorButton, bgColor)
+        
+        // Load background opacity
+        val bgOpacity = widgetPrefs.getInt("bgOpacity", 100)
+        bgOpacitySeekBar.progress = bgOpacity
+        
+        // Load clock settings
+        val showClocks = widgetPrefs.getBoolean("showClocks", true)
+        showClocksSwitch.isChecked = showClocks
+        clocksOpacitySeekBar.isEnabled = showClocks
+        
+        // Load clock opacity
+        val clocksOpacity = widgetPrefs.getInt("clocksOpacity", 40)
+        clocksOpacitySeekBar.progress = clocksOpacity
+        
+        // Load pins color
+        pinsColor = widgetPrefs.getInt("pinsColor", Color.BLACK)
+        updateColorButton(pinsColorButton, pinsColor)
+    }
+    
+    private fun setupEventListeners() {
+        // Background visibility
+        showBackgroundSwitch.setOnCheckedChangeListener { _, isChecked ->
+            backgroundSettingsGroup.visibility = if (isChecked) View.VISIBLE else View.GONE
+            saveWidgetPreference("showBackground", isChecked)
+            updateWidget()
+        }
+        
+        // Background type
+        backgroundTypeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                val value = resources.getStringArray(R.array.reply_values)[position]
+                saveWidgetPreference("backgroundType", value)
+                updateWidget()
+            }
             
-            context?.let { ctx ->
-                val prefs = ctx.getSharedPreferences("widget_$widgetId", 0)
-                val editor = prefs.edit()
-                
-                when (value) {
-                    is String -> editor.putString(key, value)
-                    is Boolean -> editor.putBoolean(key, value)
-                    is Int -> editor.putInt(key, value)
-                    is Float -> editor.putFloat(key, value)
-                    is Long -> editor.putLong(key, value)
+            override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+        
+        // Background color
+        bgColorButton.setOnClickListener {
+            showColorPicker(bgColor) { color ->
+                bgColor = color
+                updateColorButton(bgColorButton, color)
+                saveWidgetPreference("bgColor", color)
+                updateWidget()
+            }
+        }
+        
+        // Background opacity
+        bgOpacitySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    saveWidgetPreference("bgOpacity", progress)
+                    updateWidget()
                 }
-                
-                editor.apply()
+            }
+            
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+        
+        // Show clocks
+        showClocksSwitch.setOnCheckedChangeListener { _, isChecked ->
+            clocksOpacitySeekBar.isEnabled = isChecked
+            saveWidgetPreference("showClocks", isChecked)
+            updateWidget()
+        }
+        
+        // Clocks opacity
+        clocksOpacitySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    saveWidgetPreference("clocksOpacity", progress)
+                    updateWidget()
+                }
+            }
+            
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
+        
+        // Pins color
+        pinsColorButton.setOnClickListener {
+            showColorPicker(pinsColor) { color ->
+                pinsColor = color
+                updateColorButton(pinsColorButton, color)
+                saveWidgetPreference("pinsColor", color)
+                updateWidget()
             }
         }
     }
+    
+    private fun updateColorButton(button: Button, color: Int) {
+        button.setBackgroundColor(color)
+        // Set text color to contrast with background
+        val luminance = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255
+        button.setTextColor(if (luminance > 0.5) Color.BLACK else Color.WHITE)
+    }
+    
+    private fun showColorPicker(initialColor: Int, onColorSelected: (Int) -> Unit) {
+        AmbilWarnaDialog(this, initialColor, object : AmbilWarnaDialog.OnAmbilWarnaListener {
+            override fun onCancel(dialog: AmbilWarnaDialog?) {}
 
-
+            override fun onOk(dialog: AmbilWarnaDialog?, color: Int) {
+                onColorSelected(color)
+            }
+        }).show()
+    }
+    
+    // Save widget-specific preferences
+    private fun saveWidgetPreference(key: String, value: Any) {
+        if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
+        
+        val editor = widgetPrefs.edit()
+        when (value) {
+            is String -> editor.putString(key, value)
+            is Boolean -> editor.putBoolean(key, value)
+            is Int -> editor.putInt(key, value)
+            is Float -> editor.putFloat(key, value)
+            is Long -> editor.putLong(key, value)
+        }
+        editor.apply()
+    }
+    
+    // Update the widget
+    private fun updateWidget() {
+        if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
+        
+        val appWidgetManager = AppWidgetManager.getInstance(this)
+        TestWidget.updateAppWidget(this, appWidgetManager, TestWidget.SETTINGS_KICK, widgetId)
+    }
 }

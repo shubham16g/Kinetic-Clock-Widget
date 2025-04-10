@@ -79,11 +79,11 @@ class TestWidget : AppWidgetProvider() {
             Log.d(TAG, "onUpdate: appWidgetId = $appWidgetId")
             
             // Launch settings activity for configuration
-            val intent = Intent(context, SettingsActivity::class.java).apply {
-                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
-                // Add this flag to ensure a new instance is created each time
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
+//            val intent = Intent(context, SettingsActivity::class.java).apply {
+//                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+//                // Add this flag to ensure a new instance is created each time
+//                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//            }
             
             // First update the widget with default settings
             updateAppWidget(context, appWidgetManager, SETTINGS_KICK, appWidgetId)
@@ -94,7 +94,7 @@ class TestWidget : AppWidgetProvider() {
             setAlarmForWidget(context, appWidgetId)
             
             // Start the configuration activity
-            context.startActivity(intent)
+//            context.startActivity(intent)
         }
     }
 

@@ -92,24 +92,10 @@ class MainActivity : AppCompatActivity() {
             intent.flags = FLAG_ACTIVITY_NEW_TASK
             startActivity(intent)
         }
-        receiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                if (intent.action == Intent.ACTION_TIME_TICK)
-                    _updateImage()
-                else if (intent.action == STOP_FOREGROUND_ACTION) {
-                    unregisterReceiver(this)
-//                    stopForeground(true)
-//                    stopSelfResult(startId)
-                }
-            }
-        }
-        registerReceiver(receiver, IntentFilter().apply {
-            addAction(Intent.ACTION_TIME_TICK)
-            addAction(STOP_FOREGROUND_ACTION)
-        })
+
     }
 
-    private lateinit var receiver: BroadcastReceiver
+
 
 
     override fun onStart() {
@@ -134,11 +120,6 @@ class MainActivity : AppCompatActivity() {
         } else {
             image.setImageBitmap(draw.createStaticTimeClock())
         }
-    }
-
-    override fun onDestroy() {
-        unregisterReceiver(receiver)
-        super.onDestroy()
     }
 
     private fun offUI() {
