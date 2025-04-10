@@ -38,103 +38,27 @@ class MainActivity : AppCompatActivity() {
         
         // Set up listeners
         storageSwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked && !hasStoragePermission()) {
-                requestStoragePermission()
+            if (isChecked) {
+                Utils.requestStoragePermission(this)
             }
         }
         
         backgroundSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
-                requestIgnoreBatteryOptimization()
+                Utils.requestIgnoreBatteryOptimization(this)
             }
         }
     }
 
-    @SuppressLint("BatteryLife")
-    private fun requestIgnoreBatteryOptimization(isOnRequest: Boolean) {
-        Log.d(TAG, "requestIgnoreBatteryOptimization: onRequest: $isOnRequest")
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val intent = Intent()
-            if (isOnRequest) {
-                intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
-                intent.data = Uri.parse("package:$packageName")
-            } else {
-                intent.action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS;
-            }
-            intent.flags = FLAG_ACTIVITY_NEW_TASK
-            startActivity(intent)
-        }
-    }
 
-    @SuppressLint("BatteryLife")
-    fun requestIgnoreBatteryOptimization() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-            val packageName = packageName
-
-            if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
-                try {
-                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                        data = Uri.parse("package:$packageName")
-                    }
-                    startActivity(intent)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    // Fallback: open general battery settings
-                    val fallbackIntent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                    startActivity(fallbackIntent)
-                }
-            }
-        }
-    }
-
-    private fun hasStoragePermission(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                return false
-            }
-        }
-        return true
-    }
-
-    private fun hasIgnoreBatteryOptimizationPermission(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val pm: PowerManager = getSystemService(POWER_SERVICE) as PowerManager
-            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
-                return false
-            }
-        }
-        return true
-    }
 
 
     
-    private fun requestStoragePermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-                    Uri.parse("package:$packageName"))
-                intent.setData(Uri.parse("package:$packageName"))
-                startActivity(intent)
-            }
-        } else {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                ),
-                1
-            )
-        }
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE)
-//        }
-    }
+
     
     private fun refreshSwitchStates() {
-        findViewById<SwitchCompat>(R.id.storageSwitch).isChecked = hasStoragePermission()
-        findViewById<SwitchCompat>(R.id.backgroundSwitch).isChecked = hasIgnoreBatteryOptimizationPermission()
+        findViewById<SwitchCompat>(R.id.storageSwitch).isChecked = Utils.haveMangeStoragePermission(this)
+        findViewById<SwitchCompat>(R.id.backgroundSwitch).isChecked = Utils.hasIgnoreBatteryOptimizationPermission(this)
     }
     
     override fun onResume() {

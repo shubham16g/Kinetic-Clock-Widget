@@ -28,8 +28,6 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
         const val CLOCKS_HEIGHT_FACTOR = 12.35f
         const val CLOCKS_WIDTH_FACTOR = 8.35f
         const val ANIM_DURATION = 5000L
-
-        private const val TAG = "Draw"
     }
 
     private val dateFormat = SimpleDateFormat("KKmm", Locale.getDefault())
@@ -54,7 +52,8 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
         context.getSharedPreferences("widget_$widgetId", 0).getInt(key, defaultValue)
 
     private fun getPreference(key: String, defaultValue: String): String =
-        context.getSharedPreferences("widget_$widgetId", 0).getString(key, defaultValue) ?: defaultValue
+        context.getSharedPreferences("widget_$widgetId", 0).getString(key, defaultValue)
+            ?: defaultValue
 
     private lateinit var baseBg: Bitmap
 
@@ -85,8 +84,7 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
         futureTime = toTime(calendar.timeInMillis + (1000 * 60))
         currentSec = calendar.get(Calendar.SECOND)
 
-        if (currentSec <= 1)
-            return true
+        if (currentSec <= 1) return true
         return false
     }
 
@@ -105,14 +103,9 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
 
             when (getPreference("backgroundType", "solid_color")) {
                 "wall_blur" -> {
-
-                    if (true) {
+                    if (Utils.haveMangeStoragePermission(context)) {
                         val wallpaperManager = WallpaperManager.getInstance(context)
-                        val source = wallpaperManager.drawable?.toBitmap(300, 300)
-                        if (source == null) {
-                            Log.d(TAG, "buildBG: Wallpaper is null")
-                            return
-                        }
+                        val source = wallpaperManager.drawable?.toBitmap(300, 300) ?: return
                         val bgBitmap = Bitmap.createScaledBitmap(
                             fastBlur16(
                                 Bitmap.createBitmap(
@@ -131,11 +124,7 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
                         overlayPaint.color = Color.WHITE
                         overlayPaint.alpha = 8
                         canvas.drawRect(
-                            0f,
-                            0f,
-                            baseBg.width.toFloat(),
-                            baseBg.height.toFloat(),
-                            overlayPaint
+                            0f, 0f, baseBg.width.toFloat(), baseBg.height.toFloat(), overlayPaint
                         )
                     }
                 }
@@ -145,11 +134,7 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
                     solidPaint.color = getPreference("bgColor", Color.WHITE)
                     solidPaint.alpha = getPreference("bgOpacity", 100) * 5
                     canvas.drawRect(
-                        0f,
-                        0f,
-                        canvas.width.toFloat(),
-                        canvas.height.toFloat(),
-                        solidPaint
+                        0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), solidPaint
                     )
                 }
             }
@@ -159,8 +144,10 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
             val clocks = BitmapFactory.decodeResource(context.resources, R.drawable.clock_frames_1)
 
             val frontBmp = Bitmap.createScaledBitmap(
-                clocks, (size * CLOCKS_WIDTH_FACTOR).toInt(),
-                (size * CLOCKS_HEIGHT_FACTOR).toInt(), false
+                clocks,
+                (size * CLOCKS_WIDTH_FACTOR).toInt(),
+                (size * CLOCKS_HEIGHT_FACTOR).toInt(),
+                false
             )
             val alphaPaint = Paint()
             alphaPaint.alpha = getPreference("clocksOpacity", 40) * 5
@@ -170,28 +157,25 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
 
     fun createTimeClockFrame(fraction: Float, isReArrange: Boolean = false): Bitmap {
         val mu = CanvasMaker(baseBg, stroke, size, color)
-        if (isReArrange)
-            if (currentSec >= 55) {
-                mu.drawClocks(
-                    getBlockReArranged(currentTime[0], futureTime[0], fraction),
-                    getBlockReArranged(currentTime[1], futureTime[1], fraction),
-                    getBlockReArranged(currentTime[2], futureTime[2], fraction),
-                    getBlockReArranged(currentTime[3], futureTime[3], fraction),
-                )
-            } else
-                mu.drawClocks(
-                    getBlockReArranged(currentTime[0], currentTime[0], fraction),
-                    getBlockReArranged(currentTime[1], currentTime[1], fraction),
-                    getBlockReArranged(currentTime[2], currentTime[2], fraction),
-                    getBlockReArranged(currentTime[3], currentTime[3], fraction),
-                )
-        else
+        if (isReArrange) if (currentSec >= 55) {
             mu.drawClocks(
-                getBlockHour1(fraction),
-                getBlockHour2(fraction),
-                getBlockMin1(fraction),
-                getBlockMin2(fraction)
+                getBlockReArranged(currentTime[0], futureTime[0], fraction),
+                getBlockReArranged(currentTime[1], futureTime[1], fraction),
+                getBlockReArranged(currentTime[2], futureTime[2], fraction),
+                getBlockReArranged(currentTime[3], futureTime[3], fraction),
             )
+        } else mu.drawClocks(
+            getBlockReArranged(currentTime[0], currentTime[0], fraction),
+            getBlockReArranged(currentTime[1], currentTime[1], fraction),
+            getBlockReArranged(currentTime[2], currentTime[2], fraction),
+            getBlockReArranged(currentTime[3], currentTime[3], fraction),
+        )
+        else mu.drawClocks(
+            getBlockHour1(fraction),
+            getBlockHour2(fraction),
+            getBlockMin1(fraction),
+            getBlockMin2(fraction)
+        )
         return mu.getBitmap(dpToPx(8))
     }
 
@@ -210,10 +194,7 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
         val bitmap = source.copy(source.config!!, source.isMutable)
         val rs = RenderScript.create(ctx)
         val input = Allocation.createFromBitmap(
-            rs,
-            source,
-            Allocation.MipmapControl.MIPMAP_NONE,
-            Allocation.USAGE_SCRIPT
+            rs, source, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT
         )
         val output = Allocation.createTyped(rs, input.type)
         val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
@@ -240,48 +221,43 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
     private fun getBlockMin1(fraction: Float): Array<FloatArray> {
         val arr: Array<FloatArray>
         var isClone = true
-        if (currentTime[3] == 0 && currentTime[2] == 0)
-            arr = ClockData.getLargeArray(5).clone()
-        else if (currentTime[3] == 0)
-            arr = ClockData.getLargeArray(currentTime[2] - 1).clone()
+        if (currentTime[3] == 0 && currentTime[2] == 0) arr = ClockData.getLargeArray(5).clone()
+        else if (currentTime[3] == 0) arr = ClockData.getLargeArray(currentTime[2] - 1).clone()
         else {
             arr = ClockData.getLargeArray(currentTime[2])
             isClone = false
         }
-        if (isClone)
-            translate(fraction, arr, ClockData.getLargeArray(currentTime[2]))
+        if (isClone) translate(fraction, arr, ClockData.getLargeArray(currentTime[2]))
         return arr
     }
 
     private fun getBlockHour2(fraction: Float): Array<FloatArray> {
         val arr: Array<FloatArray>
         var isClone = true
-        if (currentTime[0] == 1 && currentTime[1] == 2 && currentTime[2] == 0 && currentTime[2] == 0)
-            arr = ClockData.getLargeArray(1).clone()
-        else if (currentTime[0] == 0 && currentTime[1] == 1 && currentTime[2] == 0 && currentTime[2] == 0)
-            arr = ClockData.getLargeArray(2).clone()
+        if (currentTime[0] == 1 && currentTime[1] == 2 && currentTime[2] == 0 && currentTime[2] == 0) arr =
+            ClockData.getLargeArray(1).clone()
+        else if (currentTime[0] == 0 && currentTime[1] == 1 && currentTime[2] == 0 && currentTime[2] == 0) arr =
+            ClockData.getLargeArray(2).clone()
         else {
             arr = ClockData.getLargeArray(currentTime[1])
             isClone = false
         }
-        if (isClone)
-            translate(fraction, arr, ClockData.getLargeArray(currentTime[1]))
+        if (isClone) translate(fraction, arr, ClockData.getLargeArray(currentTime[1]))
         return arr
     }
 
     private fun getBlockHour1(fraction: Float): Array<FloatArray> {
         val arr: Array<FloatArray>
         var isClone = true
-        if (currentTime[0] == 1 && currentTime[1] == 0 && currentTime[2] == 0 && currentTime[2] == 0)
-            arr = ClockData.getLargeArray(0).clone()
-        else if (currentTime[0] == 0 && currentTime[1] == 1 && currentTime[2] == 0 && currentTime[2] == 0)
-            arr = ClockData.getLargeArray(1).clone()
+        if (currentTime[0] == 1 && currentTime[1] == 0 && currentTime[2] == 0 && currentTime[2] == 0) arr =
+            ClockData.getLargeArray(0).clone()
+        else if (currentTime[0] == 0 && currentTime[1] == 1 && currentTime[2] == 0 && currentTime[2] == 0) arr =
+            ClockData.getLargeArray(1).clone()
         else {
             arr = ClockData.getLargeArray(currentTime[0])
             isClone = false
         }
-        if (isClone)
-            translate(fraction, arr, ClockData.getLargeArray(currentTime[0]))
+        if (isClone) translate(fraction, arr, ClockData.getLargeArray(currentTime[0]))
         return arr
     }
 
@@ -291,7 +267,8 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
     }
 
     private fun translate(
-        r: Float, preArr: Array<FloatArray>,
+        r: Float,
+        preArr: Array<FloatArray>,
         postArr: Array<FloatArray>,
         isReArrange: Boolean = false
     ): Array<FloatArray> {
@@ -305,8 +282,7 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
                 )
             } else {
                 preArr[i] = floatArrayOf(
-                    update(r, current[0], after[0], true),
-                    update(r, current[1], after[1], false)
+                    update(r, current[0], after[0], true), update(r, current[1], after[1], false)
                 )
             }
         }
@@ -317,10 +293,8 @@ class Draw(private val context: Context, private val widgetId: Int = 0) {
     private fun update(r: Float, _pre: Float, _post: Float, clockwise: Boolean): Float {
         var pre = _pre
         var post = _post
-        if (clockwise && pre > post)
-            post += 360f
-        else if (!clockwise && post > pre)
-            pre += 360f
+        if (clockwise && pre > post) post += 360f
+        else if (!clockwise && post > pre) pre += 360f
         return (post - pre) * r + pre
     }
 }
