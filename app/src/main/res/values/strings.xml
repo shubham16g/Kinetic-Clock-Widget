@@ -18,4 +18,5 @@
     <string name="footer">App Developed By Acoder.</string>
     <string name="wait_automatically">Wait! The clock will enabled automatically.</string>
     <string name="clock_image_desc">Clock Image</string>
+    <string name="title_widget_settings">Widget Settings</string>
 </resources>
