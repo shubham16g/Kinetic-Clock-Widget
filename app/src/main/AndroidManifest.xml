@@ -23,7 +23,7 @@
         android:theme="@style/Theme.AdvancedWidget">
 
         <receiver
-            android:name="com.shubhamgupta16.advancedwidget.TestWidget"
+            android:name="com.shubhamgupta16.advancedwidget.KineticClockWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

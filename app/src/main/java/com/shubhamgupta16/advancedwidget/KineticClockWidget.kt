@@ -4,9 +4,17 @@ package com.shubhamgupta16.advancedwidget
 import android.content.Context
 import android.graphics.Bitmap
 import com.shubhamgupta16.advancedwidget.core.AnimatedClockWidgetProvider
+import com.shubhamgupta16.advancedwidget.core.ClockWidgetProvider
 
-abstract class KineticClockWidget : AnimatedClockWidgetProvider() {
+class KineticClockWidget : AnimatedClockWidgetProvider() {
     private var sf: Sf? = null
+
+    override val animDuration: Long
+        get() = Draw2.ANIM_DURATION
+    override val currentTime: IntArray
+        get() = Draw2.currentTime
+    override val futureTime: IntArray
+        get() = Draw2.futureTime
 
     override fun getBackground(context: Context, appWidgetId: Int): Bitmap {
         if (sf == null) sf = Sf(context)
@@ -44,14 +52,9 @@ abstract class KineticClockWidget : AnimatedClockWidgetProvider() {
         )
     }
 
-    override val animDuration: Long
-        get() = Draw2.ANIM_DURATION
-    override val currentTime: IntArray
-        get() = Draw2.currentTime
-    override val futureTime: IntArray
-        get() = Draw2.futureTime
 
-//    override fun getClass(): Class<out ClockWidgetProvider> = KineticClockWidget::class.java
+
+    override fun getWidgetClass(): Class<out ClockWidgetProvider> = KineticClockWidget::class.java
 
 
 }

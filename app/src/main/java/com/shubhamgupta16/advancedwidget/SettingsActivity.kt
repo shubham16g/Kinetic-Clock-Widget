@@ -15,6 +15,7 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.shubhamgupta16.advancedwidget.core.ClockWidgetProvider.Companion.SETTINGS_KICK
 import yuku.ambilwarna.AmbilWarnaDialog
 
 
@@ -259,8 +260,10 @@ class SettingsActivity : AppCompatActivity() {
     // Update the widget
     private fun updateWidget() {
         if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
-
-        val appWidgetManager = AppWidgetManager.getInstance(this)
+        val kickstart = Intent(this, KineticClockWidget::class.java)
+        kickstart.setAction(SETTINGS_KICK)
+        kickstart.setPackage(packageName)
+        sendBroadcast(kickstart)
 //        TestWidget.updateAppWidget(this, Sf(this), appWidgetManager, TestWidget.SETTINGS_KICK, widgetId)
     }
 }
