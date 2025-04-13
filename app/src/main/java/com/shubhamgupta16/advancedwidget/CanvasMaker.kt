@@ -10,6 +10,7 @@ class CanvasMaker(baseBg: Bitmap, private val stroke: Float, private val size: I
     private val bg:Bitmap = baseBg.copy(baseBg.config!!, baseBg.isMutable)
     private val canvas: Canvas = Canvas(bg)
     private val paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val circlePaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     init {
         paint.style = Paint.Style.STROKE
@@ -19,6 +20,12 @@ class CanvasMaker(baseBg: Bitmap, private val stroke: Float, private val size: I
 
         paint.color = color
         paint.strokeWidth = stroke
+
+        circlePaint.style = Paint.Style.FILL
+        circlePaint.isDither = true
+        circlePaint.strokeJoin = Paint.Join.ROUND
+        circlePaint.strokeCap = Paint.Cap.ROUND
+        circlePaint.color = 0x00282E41.toInt()
     }
 
     fun drawClocks(
@@ -45,6 +52,7 @@ class CanvasMaker(baseBg: Bitmap, private val stroke: Float, private val size: I
         var top = baseY
         var left = baseX
         for (i in numberArray.indices) {
+            drawCircle(left, top)
             val pin = numberArray[i]
             drawLine(pin[0], size / 2.4f, left, top)
             drawLine(pin[1], size / 2.8f, left, top)
@@ -60,8 +68,12 @@ class CanvasMaker(baseBg: Bitmap, private val stroke: Float, private val size: I
         val toX = x + radius * sin(Math.toRadians(angle.toDouble()))
         val toY = y + radius * cos(Math.toRadians(angle.toDouble()))
         canvas.drawLine(x, y, toX.toFloat(), toY.toFloat(), paint)
-
     }
+
+    private fun drawCircle(x: Float, y: Float) {
+        canvas.drawCircle(x, y, size / 2f, circlePaint)
+    }
+
 
     fun getBitmap(roundPx: Float): Bitmap {
         return roundCornered(bg, roundPx)

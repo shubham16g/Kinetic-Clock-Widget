@@ -33,6 +33,8 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        startActivity(Intent(this, DebugTestActivity::class.java))
+
 
         val storageSwitch = findViewById<SwitchCompat>(R.id.storageSwitch)
         val backgroundSwitch = findViewById<SwitchCompat>(R.id.backgroundSwitch)
