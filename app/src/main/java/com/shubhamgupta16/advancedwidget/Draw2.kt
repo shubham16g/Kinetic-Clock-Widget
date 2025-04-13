@@ -70,7 +70,7 @@ object Draw2 {
 
 
     private val dateFormat = SimpleDateFormat("KKmm", Locale.getDefault())
-    private fun toTime(mills: Long): IntArray {
+    fun toTime(mills: Long): IntArray {
         return dateFormat.format(mills).toList().map { it.toString().toInt() }.toIntArray()
     }
 

@@ -1,5 +1,6 @@
 package com.shubhamgupta16.advancedwidget
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
@@ -35,6 +36,9 @@ class MainActivity : AppCompatActivity() {
 
         val storageSwitch = findViewById<SwitchCompat>(R.id.storageSwitch)
         val backgroundSwitch = findViewById<SwitchCompat>(R.id.backgroundSwitch)
+        findViewById<View>(R.id.settings_btn).setOnClickListener {
+            startActivity(Intent(this, DebugTestActivity::class.java))
+        }
         
         // Set initial states
         refreshSwitchStates()
