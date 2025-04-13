@@ -31,7 +31,9 @@ abstract class AnimatedClockWidgetProvider : ClockWidgetProvider() {
 
     abstract val futureTime: IntArray
 
-    private val iMap = mutableMapOf<Int, Long>()
+    companion object {
+        private val iMap = mutableMapOf<Int, Long>()
+    }
 
     private fun drawAnim(widgetId: Int, listener: (fraction: Float, currentSec: Int) -> Unit) {
         val animProgress: Long = iMap[widgetId] ?: -1
