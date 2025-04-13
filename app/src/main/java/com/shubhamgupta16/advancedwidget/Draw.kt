@@ -1,13 +1,10 @@
 package com.shubhamgupta16.advancedwidget
 
-import android.Manifest
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.WallpaperManager
 import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.*
-import android.os.Build
 import android.renderscript.Allocation
 import android.renderscript.Element
 import android.renderscript.RenderScript

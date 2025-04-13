@@ -21,10 +21,10 @@ import java.util.Calendar
 private const val TAG = "TestWidget"
 
 class TestWidget : AppWidgetProvider() {
-    private var draw: Draw? = null
+    private var sf: Sf? = null
 
-    private fun onTick(context: Context, action: String, appWidgetIds: IntArray?) {
-        var appWidgetIds = appWidgetIds
+    private fun onTick(context: Context, action: String, appWidgetIdsA: IntArray?) {
+        var appWidgetIds = appWidgetIdsA
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val widgetName = ComponentName(context.packageName, TestWidget::class.java.name)
 
@@ -33,11 +33,12 @@ class TestWidget : AppWidgetProvider() {
         if (appWidgetIds == null) {
             appWidgetIds = appWidgetManager.getAppWidgetIds(widgetName)
         }
-
+        if (sf == null) sf = Sf(context)
         for (appWidgetId in appWidgetIds!!) {
             Log.d(TAG, "onTick: appWidgetId = $appWidgetId")
-            updateAppWidget(context, appWidgetManager, action, appWidgetId)
-            
+            if (sf == null) sf = Sf(context)
+            updateAppWidget(context, sf!!, appWidgetManager, action, appWidgetId)
+
             // Set an individual alarm for this specific widget
             val pendingIntent = getPendingIntent(context, intArrayOf(appWidgetId), MINUTE_TICK)
             alarmPendingIntents[appWidgetId] = pendingIntent
@@ -76,22 +77,23 @@ class TestWidget : AppWidgetProvider() {
         // There may be multiple widgets active, so update all of them
         for (appWidgetId in appWidgetIds) {
             Log.d(TAG, "onUpdate: appWidgetId = $appWidgetId")
-            
+
             // Launch settings activity for configuration
 //            val intent = Intent(context, SettingsActivity::class.java).apply {
 //                putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
 //                // Add this flag to ensure a new instance is created each time
 //                flags = Intent.FLAG_ACTIVITY_NEW_TASK
 //            }
-            
+
             // First update the widget with default settings
-            updateAppWidget(context, appWidgetManager, SETTINGS_KICK, appWidgetId)
-            
+            if (sf == null) sf = Sf(context)
+            updateAppWidget(context, sf!!, appWidgetManager, SETTINGS_KICK, appWidgetId)
+
             // Create a specific alarm for this widget
             val pendingIntent = getPendingIntent(context, intArrayOf(appWidgetId), MINUTE_TICK)
             alarmPendingIntents[appWidgetId] = pendingIntent
             setAlarmForWidget(context, appWidgetId)
-            
+
             // Start the configuration activity
 //            context.startActivity(intent)
         }
@@ -111,12 +113,12 @@ class TestWidget : AppWidgetProvider() {
         }
         alarmPendingIntents.clear()
     }
-    
+
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
         // Called when widgets are deleted
         val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         for (appWidgetId in appWidgetIds) {
-            alarmPendingIntents[appWidgetId]?.let { 
+            alarmPendingIntents[appWidgetId]?.let {
                 alarmMgr.cancel(it)
                 alarmPendingIntents.remove(appWidgetId)
             }
@@ -129,9 +131,16 @@ class TestWidget : AppWidgetProvider() {
         appWidgetId: Int, newOptions: Bundle
     ) {
         Log.d(TAG, "onAppWidgetOptionsChanged: Called")
-        if (draw == null) draw = Draw(context, appWidgetId)
-        draw!!.init()
-        val views = updateRemoteView(context, appWidgetId, draw!!.createStaticTimeClock())
+        if (sf == null) sf = Sf(context)
+        val views = updateRemoteView(
+            context, appWidgetId,
+            Draw2.createStaticTimeClock(
+                Draw2.buildBG(context, sf!!, appWidgetId),
+                sf!!,
+                appWidgetId,
+                Draw2.currentTime
+            )
+        )
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
 
@@ -143,9 +152,9 @@ class TestWidget : AppWidgetProvider() {
         const val SETTINGS_KICK: String = "com.shubhamgupta16.advancedwidget.SETTINGS_KICK"
         const val WIDGET_CLICK: String = "com.shubhamgupta16.advancedwidget.WIDGET_CLICK"
 
-        fun configureWidget(context: Context, appWidgetId: Int) {
+        fun configureWidget(context: Context, sf: Sf, appWidgetId: Int) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
-            updateAppWidget(context, appWidgetManager, SETTINGS_KICK, appWidgetId)
+            updateAppWidget(context, sf, appWidgetManager, SETTINGS_KICK, appWidgetId)
         }
 
         private fun getPendingIntent(
@@ -156,11 +165,11 @@ class TestWidget : AppWidgetProvider() {
             val tickIntent = Intent(context, TestWidget::class.java)
             tickIntent.setAction(action)
             tickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
-            
+
             // Using the first widget ID as the request code to ensure uniqueness
             // for multiple widget instances
             val requestCode = if (appWidgetIds.isNotEmpty()) appWidgetIds[0] else 0
-            
+
             return PendingIntent.getBroadcast(
                 context,
                 requestCode,
@@ -174,10 +183,10 @@ class TestWidget : AppWidgetProvider() {
             cal.add(Calendar.MINUTE, 1)
             cal[Calendar.SECOND] = 0
             val t = cal.timeInMillis
-            
+
             val alarmMgr = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val pendingIntent = alarmPendingIntents[appWidgetId] ?: return
-            
+
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R || alarmMgr.canScheduleExactAlarms()) {
                 alarmMgr.setExact(AlarmManager.RTC, t, pendingIntent)
             } else {
@@ -187,6 +196,7 @@ class TestWidget : AppWidgetProvider() {
 
         fun updateAppWidget(
             context: Context,
+            sf: Sf,
             appWidgetManager: AppWidgetManager,
             action: String,
             appWidgetId: Int
@@ -194,35 +204,53 @@ class TestWidget : AppWidgetProvider() {
 
             Log.d(TAG, "updateAppWidget: ")
             Log.d(TAG, "updateAppWidget: animType")
-            val draw = Draw(context, appWidgetId)
-            val isByTime = draw.init()
+
+            val isByTime = Draw2.init()
+            val currentTime = Draw2.currentTime
+            val futureTime = Draw2.futureTime
+            val baseBg = Draw2.buildBG(context, sf, appWidgetId)
             if (action == WIDGET_CLICK) {
-                draw.drawAnim { fraction ->
+                Draw2.drawAnim(sf, appWidgetId) { fraction ->
                     appWidgetManager.updateAppWidget(
                         appWidgetId,
                         updateRemoteView(
                             context,
                             appWidgetId,
-                            draw.createTimeClockFrame(fraction, isReArrange = true)
+                            Draw2.createTimeClockFrame(
+                                baseBg,
+                                sf,
+                                appWidgetId,
+                                currentTime,
+                                futureTime,
+                                fraction,
+                                isReArrange = true
+                            )
                         )
                     )
                 }
             } else
                 if (isByTime) {
-                    draw.drawAnim { fraction ->
+                    Draw2.drawAnim(sf, appWidgetId) { fraction ->
                         appWidgetManager.updateAppWidget(
                             appWidgetId,
                             updateRemoteView(
                                 context,
                                 appWidgetId,
-                                draw.createTimeClockFrame(fraction)
+                                Draw2.createTimeClockFrame(
+                                    baseBg,
+                                    sf,
+                                    appWidgetId,
+                                    currentTime,
+                                    futureTime,
+                                    fraction
+                                )
                             )
                         )
                     }
                 } else {
                     appWidgetManager.updateAppWidget(
                         appWidgetId,
-                        updateRemoteView(context, appWidgetId, draw.createStaticTimeClock())
+                        updateRemoteView(context, appWidgetId, Draw2.createStaticTimeClock(baseBg, sf, appWidgetId, currentTime))
                     )
                 }
         }

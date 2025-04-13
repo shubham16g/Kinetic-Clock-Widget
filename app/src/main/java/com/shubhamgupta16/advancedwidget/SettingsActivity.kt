@@ -49,13 +49,13 @@ class SettingsActivity : AppCompatActivity() {
             v.setPadding(0, systemBars.top, 0, 0)
             insets
         }
+        widgetPrefs = getSharedPreferences("widget_x", 0)
 
         // Get widget ID from intent
         widgetId = intent.getIntExtra(EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
         Log.d(TAG, "onCreate: widgetId: $widgetId")
 
         // Initialize widget preferences
-        widgetPrefs = getSharedPreferences("widget_$widgetId", 0)
 
         // Setup toolbar
         setSupportActionBar(findViewById(R.id.toolbar))
@@ -105,12 +105,12 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun loadSavedPreferences() {
         // Load background settings
-        val showBackground = widgetPrefs.getBoolean("showBackground", true)
+        val showBackground = widgetPrefs.getBoolean("showBackground_$widgetId", true)
         showBackgroundSwitch.isChecked = showBackground
         backgroundSettingsGroup.visibility = if (showBackground) View.VISIBLE else View.GONE
 
         // Load background type
-        val backgroundType = widgetPrefs.getString("backgroundType", "solid_color") ?: "solid_color"
+        val backgroundType = widgetPrefs.getString("backgroundType_$widgetId", "solid_color") ?: "solid_color"
         val backgroundTypePosition =
             resources.getStringArray(R.array.reply_values).indexOf(backgroundType)
         if (backgroundTypePosition != -1) {
@@ -118,24 +118,24 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // Load background color
-        bgColor = widgetPrefs.getInt("bgColor", ContextCompat.getColor(this, R.color.white))
+        bgColor = widgetPrefs.getInt("bgColor_$widgetId", ContextCompat.getColor(this, R.color.white))
         updateColorButton(bgColorButton, bgColor)
 
         // Load background opacity
-        val bgOpacity = widgetPrefs.getInt("bgOpacity", 100)
+        val bgOpacity = widgetPrefs.getInt("bgOpacity_$widgetId", 100)
         bgOpacitySeekBar.progress = bgOpacity
 
         // Load clock settings
-        val showClocks = widgetPrefs.getBoolean("showClocks", true)
+        val showClocks = widgetPrefs.getBoolean("showClocks_$widgetId", true)
         showClocksSwitch.isChecked = showClocks
         clocksOpacitySeekBar.isEnabled = showClocks
 
         // Load clock opacity
-        val clocksOpacity = widgetPrefs.getInt("clocksOpacity", 40)
+        val clocksOpacity = widgetPrefs.getInt("clocksOpacity_$widgetId", 40)
         clocksOpacitySeekBar.progress = clocksOpacity
 
         // Load pins color
-        pinsColor = widgetPrefs.getInt("pinsColor", Color.BLACK)
+        pinsColor = widgetPrefs.getInt("pinsColor_$widgetId", Color.BLACK)
         updateColorButton(pinsColorButton, pinsColor)
     }
 
@@ -240,11 +240,11 @@ class SettingsActivity : AppCompatActivity() {
 
         val editor = widgetPrefs.edit()
         when (value) {
-            is String -> editor.putString(key, value)
-            is Boolean -> editor.putBoolean(key, value)
-            is Int -> editor.putInt(key, value)
-            is Float -> editor.putFloat(key, value)
-            is Long -> editor.putLong(key, value)
+            is String -> editor.putString(key + "_$widgetId", value)
+            is Boolean -> editor.putBoolean(key + "_$widgetId", value)
+            is Int -> editor.putInt(key + "_$widgetId", value)
+            is Float -> editor.putFloat(key + "_$widgetId", value)
+            is Long -> editor.putLong(key + "_$widgetId", value)
         }
         editor.apply()
     }
@@ -254,6 +254,6 @@ class SettingsActivity : AppCompatActivity() {
         if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
 
         val appWidgetManager = AppWidgetManager.getInstance(this)
-        TestWidget.updateAppWidget(this, appWidgetManager, TestWidget.SETTINGS_KICK, widgetId)
+//        TestWidget.updateAppWidget(this, Sf(this), appWidgetManager, TestWidget.SETTINGS_KICK, widgetId)
     }
 }
