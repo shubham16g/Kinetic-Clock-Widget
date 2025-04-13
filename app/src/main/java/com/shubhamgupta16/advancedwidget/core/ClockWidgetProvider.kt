@@ -20,12 +20,12 @@ abstract class ClockWidgetProvider : AppWidgetProvider() {
         USER_CLICK
     }
 
-    abstract fun getClass(): Class<out ClockWidgetProvider>
+    abstract fun getWidgetClass(): Class<out ClockWidgetProvider>
 
     private fun onTick(context: Context, action: UpdateType, appWidgetIdsA: IntArray?) {
         var appWidgetIds = appWidgetIdsA
         val appWidgetManager = AppWidgetManager.getInstance(context)
-        val widgetName = ComponentName(context.packageName, getClass().name)
+        val widgetName = ComponentName(context.packageName, getWidgetClass().name)
 
         // SETTINGS_KICK may be received without any extra appWidgetIds array;
         // if so, get the array of current appWidgetIds
@@ -180,7 +180,7 @@ abstract class ClockWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray,
         action: String
     ): PendingIntent {
-        val tickIntent = Intent(context, getClass())
+        val tickIntent = Intent(context, getWidgetClass())
         tickIntent.setAction(action)
         tickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds)
 

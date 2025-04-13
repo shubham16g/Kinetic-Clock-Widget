@@ -22,6 +22,8 @@ package com.shubhamgupta16.advancedwidget
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.shubhamgupta16.advancedwidget.core.ClockWidgetProvider.Companion.MINUTE_TICK
+import com.shubhamgupta16.advancedwidget.core.ClockWidgetProvider.Companion.SETTINGS_KICK
 
 class BootCompletedBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -29,7 +31,7 @@ class BootCompletedBroadcastReceiver : BroadcastReceiver() {
 
         if (action != null && action == Intent.ACTION_BOOT_COMPLETED) {
             val kickstart = Intent(context, TestWidget::class.java)
-            kickstart.setAction(TestWidget.MINUTE_TICK)
+            kickstart.setAction(SETTINGS_KICK)
             kickstart.setPackage(context.packageName)
             context.sendBroadcast(kickstart)
         }

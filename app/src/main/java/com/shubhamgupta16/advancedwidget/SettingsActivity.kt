@@ -261,6 +261,6 @@ class SettingsActivity : AppCompatActivity() {
         if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
 
         val appWidgetManager = AppWidgetManager.getInstance(this)
-        TestWidget.updateAppWidget(this, Sf(this), appWidgetManager, TestWidget.SETTINGS_KICK, widgetId)
+//        TestWidget.updateAppWidget(this, Sf(this), appWidgetManager, TestWidget.SETTINGS_KICK, widgetId)
     }
 }
