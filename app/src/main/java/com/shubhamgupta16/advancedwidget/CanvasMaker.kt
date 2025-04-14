@@ -5,7 +5,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 
-class CanvasMaker(baseBg: Bitmap, private val stroke: Float, private val size: Int, color: Int) {
+class CanvasMaker(baseBg: Bitmap, private val stroke: Float, private val size: Float, private val padding: Float, color: Int) {
 
     private val bg:Bitmap = baseBg.copy(baseBg.config!!, baseBg.isMutable)
     private val canvas: Canvas = Canvas(bg)
@@ -35,8 +35,8 @@ class CanvasMaker(baseBg: Bitmap, private val stroke: Float, private val size: I
         block4: Array<FloatArray>
     ) {
 
-        val top = stroke*9.3f + size/2f
-        val left = stroke*12f + size/2f
+        val top = padding + size/2f
+        val left = padding + size/2f
 
         drawBlock(block1, left, top)
         drawBlock(block2, left + size * 4f, top)

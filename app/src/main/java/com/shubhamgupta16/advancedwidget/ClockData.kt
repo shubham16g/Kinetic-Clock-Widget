@@ -3,10 +3,10 @@ package com.shubhamgupta16.advancedwidget
 class ClockData {
     companion object {
         private val hidden_____ = floatArrayOf(315f, 315f)
-        private val bottomRight = floatArrayOf(0f, 90f)
-        private val bottomLeft_ = floatArrayOf(0f, 270f)
         private val horizontal_ = floatArrayOf(270f, 90f)
         private val vertical___ = floatArrayOf(0f, 180f)
+        private val bottomRight = floatArrayOf(0f, 90f)
+        private val bottomLeft_ = floatArrayOf(0f, 270f)
         private val topRight___ = floatArrayOf(90f, 180f)
         private val topLeft____ = floatArrayOf(270f, 180f)
 

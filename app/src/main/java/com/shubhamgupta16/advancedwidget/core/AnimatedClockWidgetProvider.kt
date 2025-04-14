@@ -18,18 +18,13 @@ abstract class AnimatedClockWidgetProvider : ClockWidgetProvider() {
         context: Context,
         appWidgetId: Int,
         background: Bitmap,
-        currentTime: IntArray,
-        futureTime: IntArray,
+        currentTime: Calendar,
         fraction: Float,
         currentSec: Int,
         isReArrange: Boolean
     ): Bitmap
 
     abstract val animDuration: Long
-
-    abstract val currentTime: IntArray
-
-    abstract val futureTime: IntArray
 
     companion object {
         private val iMap = mutableMapOf<Int, Long>()
@@ -69,12 +64,10 @@ abstract class AnimatedClockWidgetProvider : ClockWidgetProvider() {
         updateType: UpdateType,
         appWidgetId: Int
     ) {
-        val calendar = Calendar.getInstance()
-        val secondsNow = calendar.get(Calendar.SECOND)
+        val currentTime = Calendar.getInstance()
+        val secondsNow = currentTime.get(Calendar.SECOND)
         val isByTime = secondsNow <= 1
 
-        val currentTime = this.currentTime
-        val futureTime = this.futureTime
 
         val baseBg = getBackground(context, appWidgetId)
         if (updateType == UpdateType.USER_CLICK) {
@@ -89,7 +82,6 @@ abstract class AnimatedClockWidgetProvider : ClockWidgetProvider() {
                             appWidgetId,
                             baseBg,
                             currentTime,
-                            futureTime,
                             fraction,
                             currentSec,
                             true
@@ -111,7 +103,6 @@ abstract class AnimatedClockWidgetProvider : ClockWidgetProvider() {
                                 appWidgetId,
                                 baseBg,
                                 currentTime,
-                                futureTime,
                                 fraction,
                                 currentSec,
                                 false
@@ -129,7 +120,6 @@ abstract class AnimatedClockWidgetProvider : ClockWidgetProvider() {
                             context,
                             appWidgetId,
                             baseBg,
-                            currentTime,
                             currentTime,
                             0f,
                             secondsNow,

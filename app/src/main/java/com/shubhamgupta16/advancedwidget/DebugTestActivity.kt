@@ -90,8 +90,7 @@ class DebugTestActivity : AppCompatActivity() {
             Draw2.createTimeClockFrame(
                 Draw2.buildBG(this, Sf(this), 0),
                 Sf(this), 0,
-                Draw2.toTime(calender.timeInMillis),
-                Draw2.toTime(calender.timeInMillis + 60000),
+                calender,
                 seekBar.progress / 1000f,
                 0,
                 isReArrange = switch.isChecked
