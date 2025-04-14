@@ -252,7 +252,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         bgPicker.setOnClickListener {
-            showColorPicker(pinColor) { color ->
+            showColorPicker(bgColor) { color ->
                 Log.d(TAG, "COLOR:::::PICKER: color: $color")
                 bgRadioGroup.check(View.NO_ID)
                 bgColor = color
