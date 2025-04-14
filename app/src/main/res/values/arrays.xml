@@ -5,11 +5,16 @@
         <item>#fe2e2e</item>
         <item>#f78182</item>
         <item>#ff8000</item>
-        <item>#f8be82</item>
-        <item>#ffff00</item>
         <item>#f3f681</item>
+        <item>#000000</item>
+        <item>#444444</item>
+        <item>#777777</item>
+        <item>#cccccc</item>
+        <item>#ffffff</item>
         <item>#00ff01</item>
         <item>#81f681</item>
+        <item>#f8be82</item>
+        <item>#ffff00</item>
         <item>#01ffff</item>
         <item>#aaf6f1</item>
         <item>#0274df</item>
@@ -22,10 +27,5 @@
         <item>#f5a9f3</item>
         <item>#e00173</item>
         <item>#f881bd</item>
-        <item>#000000</item>
-        <item>#444444</item>
-        <item>#777777</item>
-        <item>#cccccc</item>
-        <item>#ffffff</item>
     </string-array>
 </resources>

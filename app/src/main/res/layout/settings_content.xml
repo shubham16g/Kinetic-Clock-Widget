@@ -5,10 +5,9 @@
     android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/settings_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="80dp"
+        android:paddingBottom="16dp"
         android:orientation="vertical">
 
         <!-- Background Section -->

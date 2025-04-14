@@ -45,7 +45,7 @@ class SettingsActivity : AppCompatActivity() {
 
     // Current values
     private var bgColor: Int = Color.WHITE
-    private var pinsColor: Int = Color.BLACK
+    private var pinColor: Int = Color.BLACK
     private lateinit var image: ImageView
     private lateinit var preview: AnimatedClockPreview
 
@@ -59,11 +59,8 @@ class SettingsActivity : AppCompatActivity() {
         ) { v: View, insets: WindowInsetsCompat ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(0, systemBars.top, 0, 0)
-            findViewById<View>(R.id.settings_content).updatePadding(
-                bottom = systemBars.bottom + dpToPx(80).roundToInt()
-            )
             findViewById<View>(R.id.btn_save_container)
-                .updatePadding(bottom = systemBars.bottom + dpToPx(8).roundToInt())
+                .updatePadding(bottom = systemBars.bottom + dpToPx(2).roundToInt())
             insets
         }
         widgetPrefs = Sf(this)
@@ -154,7 +151,7 @@ class SettingsActivity : AppCompatActivity() {
 
         // Load background color
         bgColor = widgetPrefs.bgColor(widgetId)
-        pinsColor = widgetPrefs.color(widgetId)
+        pinColor = widgetPrefs.color(widgetId)
         // Load background opacity
         val bgOpacity = widgetPrefs.bgOpacity(widgetId)
         bgOpacitySlider.value = bgOpacity.toFloat()
@@ -168,6 +165,21 @@ class SettingsActivity : AppCompatActivity() {
         val clocksOpacity = widgetPrefs.clocksOpacity(widgetId)
         clocksOpacitySeekBar.value = clocksOpacity.toFloat()
 
+
+        val checkedPinRadio = pinRadioGroup.findViewWithTag<RadioButton>(pinColor)
+        val checkedBgRadio = bgRadioGroup.findViewWithTag<RadioButton>(bgColor)
+        if (checkedPinRadio != null) {
+            pinRadioGroup.check(checkedPinRadio.id)
+        } else {
+            pinPicker.background = Utils.selectedDrawable(pinColor)
+        }
+        if (checkedBgRadio != null) {
+            bgRadioGroup.check(checkedBgRadio.id)
+        } else if (bgColor == Sf.BLUR_COLOR) {
+            bgBlur.background = Utils.selectedDrawable(bgColor)
+        } else {
+            bgPicker.background = Utils.selectedDrawable(bgColor)
+        }
     }
 
     private fun setupEventListeners() {
@@ -208,7 +220,7 @@ class SettingsActivity : AppCompatActivity() {
             val button = pinRadioGroup.findViewById<RadioButton?>(checkedId)
                 ?: return@setOnCheckedChangeListener
             val selectedColor = button.tag as Int
-            pinsColor = selectedColor
+            pinColor = selectedColor
             widgetPrefs.setColor(widgetId, selectedColor)
             pinPicker.background = Utils.unSelectedRadioDrawable(Color.WHITE)
             preview.notifySettingsUpdated(this@SettingsActivity)
@@ -228,10 +240,10 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         pinPicker.setOnClickListener {
-            showColorPicker(pinsColor) { color ->
+            showColorPicker(pinColor) { color ->
                 Log.d(TAG, "COLOR:::::PICKER: color: $color")
                 pinRadioGroup.check(View.NO_ID)
-                pinsColor = color
+                pinColor = color
                 widgetPrefs.setColor(widgetId, color)
                 preview.notifySettingsUpdated(this@SettingsActivity)
                 updateWidget()
@@ -240,7 +252,7 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         bgPicker.setOnClickListener {
-            showColorPicker(pinsColor) { color ->
+            showColorPicker(pinColor) { color ->
                 Log.d(TAG, "COLOR:::::PICKER: color: $color")
                 bgRadioGroup.check(View.NO_ID)
                 bgColor = color
