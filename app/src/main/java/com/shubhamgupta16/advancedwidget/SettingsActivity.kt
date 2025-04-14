@@ -24,7 +24,7 @@ private const val TAG = "SettingsActivity"
 class SettingsActivity : AppCompatActivity() {
 
     private var widgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
-    private lateinit var widgetPrefs: SharedPreferences
+    private lateinit var widgetPrefs: Sf
 
     // UI elements
     private lateinit var showBackgroundSwitch: SwitchCompat
@@ -52,7 +52,7 @@ class SettingsActivity : AppCompatActivity() {
             v.setPadding(0, systemBars.top, 0, 0)
             insets
         }
-        widgetPrefs = getSharedPreferences("widget_x", 0)
+        widgetPrefs = Sf(this)
 
         // Get widget ID from intent
         widgetId = intent.getIntExtra(EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
@@ -80,10 +80,10 @@ class SettingsActivity : AppCompatActivity() {
         sendBroadcast(intent)
     }
 
-    override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
-        return true
-    }
+//    override fun onSupportNavigateUp(): Boolean {
+//        onBackPressed()
+//        return true
+//    }
 
     private fun initializeUiElements() {
         // Background settings
@@ -113,12 +113,12 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun loadSavedPreferences() {
         // Load background settings
-        val showBackground = widgetPrefs.getBoolean("showBackground_$widgetId", true)
+        val showBackground = widgetPrefs.showBackground(widgetId)
         showBackgroundSwitch.isChecked = showBackground
         backgroundSettingsGroup.visibility = if (showBackground) View.VISIBLE else View.GONE
 
         // Load background type
-        val backgroundType = widgetPrefs.getString("backgroundType_$widgetId", "solid_color") ?: "solid_color"
+        val backgroundType = widgetPrefs.backgroundType(widgetId)
         val backgroundTypePosition =
             resources.getStringArray(R.array.reply_values).indexOf(backgroundType)
         if (backgroundTypePosition != -1) {
@@ -126,24 +126,24 @@ class SettingsActivity : AppCompatActivity() {
         }
 
         // Load background color
-        bgColor = widgetPrefs.getInt("bgColor_$widgetId", ContextCompat.getColor(this, R.color.white))
+        bgColor = widgetPrefs.bgColor(widgetId)
         updateColorButton(bgColorButton, bgColor)
 
         // Load background opacity
-        val bgOpacity = widgetPrefs.getInt("bgOpacity_$widgetId", 100)
+        val bgOpacity = widgetPrefs.bgOpacity(widgetId)
         bgOpacitySeekBar.progress = bgOpacity
 
         // Load clock settings
-        val showClocks = widgetPrefs.getBoolean("showClocks_$widgetId", true)
+        val showClocks = widgetPrefs.showClocks(widgetId)
         showClocksSwitch.isChecked = showClocks
         clocksOpacitySeekBar.isEnabled = showClocks
 
         // Load clock opacity
-        val clocksOpacity = widgetPrefs.getInt("clocksOpacity_$widgetId", 40)
+        val clocksOpacity = widgetPrefs.clocksOpacity(widgetId)
         clocksOpacitySeekBar.progress = clocksOpacity
 
         // Load pins color
-        pinsColor = widgetPrefs.getInt("pinsColor_$widgetId", Color.BLACK)
+        pinsColor = widgetPrefs.color(widgetId)
         updateColorButton(pinsColorButton, pinsColor)
     }
 
@@ -151,7 +151,7 @@ class SettingsActivity : AppCompatActivity() {
         // Background visibility
         showBackgroundSwitch.setOnCheckedChangeListener { _, isChecked ->
             backgroundSettingsGroup.visibility = if (isChecked) View.VISIBLE else View.GONE
-            saveWidgetPreference("showBackground", isChecked)
+            widgetPrefs.setShowBackground(widgetId, isChecked)
             updateWidget()
         }
 
@@ -164,7 +164,7 @@ class SettingsActivity : AppCompatActivity() {
                 id: Long
             ) {
                 val value = resources.getStringArray(R.array.reply_values)[position]
-                saveWidgetPreference("backgroundType", value)
+                widgetPrefs.setBackgroundType(widgetId, value)
                 updateWidget()
             }
 
@@ -176,7 +176,7 @@ class SettingsActivity : AppCompatActivity() {
             showColorPicker(bgColor) { color ->
                 bgColor = color
                 updateColorButton(bgColorButton, color)
-                saveWidgetPreference("bgColor", color)
+                widgetPrefs.setBgColor(widgetId, color)
                 updateWidget()
             }
         }
@@ -185,7 +185,7 @@ class SettingsActivity : AppCompatActivity() {
         bgOpacitySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    saveWidgetPreference("bgOpacity", progress)
+                    widgetPrefs.setBgOpacity(widgetId, progress)
                     updateWidget()
                 }
             }
@@ -197,7 +197,7 @@ class SettingsActivity : AppCompatActivity() {
         // Show clocks
         showClocksSwitch.setOnCheckedChangeListener { _, isChecked ->
             clocksOpacitySeekBar.isEnabled = isChecked
-            saveWidgetPreference("showClocks", isChecked)
+            widgetPrefs.setShowClocks(widgetId, isChecked)
             updateWidget()
         }
 
@@ -205,7 +205,7 @@ class SettingsActivity : AppCompatActivity() {
         clocksOpacitySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    saveWidgetPreference("clocksOpacity", progress)
+                    widgetPrefs.setClocksOpacity(widgetId, progress)
                     updateWidget()
                 }
             }
@@ -219,7 +219,7 @@ class SettingsActivity : AppCompatActivity() {
             showColorPicker(pinsColor) { color ->
                 pinsColor = color
                 updateColorButton(pinsColorButton, color)
-                saveWidgetPreference("pinsColor", color)
+                widgetPrefs.setColor(widgetId, color)
                 updateWidget()
             }
         }
@@ -240,21 +240,6 @@ class SettingsActivity : AppCompatActivity() {
                 onColorSelected(color)
             }
         }).show()
-    }
-
-    // Save widget-specific preferences
-    private fun saveWidgetPreference(key: String, value: Any) {
-        if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
-
-        val editor = widgetPrefs.edit()
-        when (value) {
-            is String -> editor.putString(key + "_$widgetId", value)
-            is Boolean -> editor.putBoolean(key + "_$widgetId", value)
-            is Int -> editor.putInt(key + "_$widgetId", value)
-            is Float -> editor.putFloat(key + "_$widgetId", value)
-            is Long -> editor.putLong(key + "_$widgetId", value)
-        }
-        editor.apply()
     }
 
     // Update the widget

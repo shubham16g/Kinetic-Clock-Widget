@@ -6,11 +6,13 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.DisplayMetrics
 import androidx.appcompat.app.AppCompatActivity.POWER_SERVICE
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -86,4 +88,11 @@ object Utils {
 //            requestPermissions(arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), STORAGE_PERMISSION_REQUEST_CODE)
 //        }
     }
+
+
+}
+
+ fun dpToPx(dp: Int): Float {
+    val displayMetrics: DisplayMetrics = Resources.getSystem().displayMetrics
+    return dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT)
 }

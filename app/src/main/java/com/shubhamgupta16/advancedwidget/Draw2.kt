@@ -1,65 +1,17 @@
 package com.shubhamgupta16.advancedwidget
 
-import android.animation.ValueAnimator
-import android.annotation.SuppressLint
+
 import android.app.WallpaperManager
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.*
 import android.renderscript.Allocation
 import android.renderscript.Element
 import android.renderscript.RenderScript
 import android.renderscript.ScriptIntrinsicBlur
-import android.util.DisplayMetrics
-import android.util.Log
-import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.core.graphics.drawable.toBitmap
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
-
-class Sf(private val context: Context) {
-
-    private val sf = context.getSharedPreferences("widget_x", 0)
-
-    fun size(widgetId: Int): Float = sf.getFloat("size_$widgetId", dpToPx(30))
-
-    fun padding(widgetId: Int): Float =
-        (size(widgetId) / dpToPx(15)) * sf.getFloat("padding_$widgetId", dpToPx(8))
-
-    fun stroke(widgetId: Int): Float = sf.getFloat("stroke_$widgetId", size(widgetId) / 15f)
-
-    fun color(widgetId: Int): Int = sf.getInt("pinsColor_$widgetId", Color.BLACK)
-
-    fun showBackground(widgetId: Int): Boolean = sf.getBoolean("showBackground_$widgetId", true)
-
-    fun backgroundType(widgetId: Int): String =
-        sf.getString("backgroundType_$widgetId", "solid_color") ?: "solid_color"
-
-    fun bgOpacity(widgetId: Int): Int = sf.getInt("bgOpacity_$widgetId", 100)
-
-    fun bgColor(widgetId: Int): Int = sf.getInt("bgColor_$widgetId", Color.WHITE)
-
-    fun showClocks(widgetId: Int): Boolean = sf.getBoolean("showClocks_$widgetId", true)
-
-    fun clocksOpacity(widgetId: Int): Int = sf.getInt("clocksOpacity_$widgetId", 40)
-
-
-    fun getAnimProgress(widgetId: Int): Long {
-        return sf.getLong("animProgress_$widgetId", -1L)
-    }
-
-    fun setAnimProgress(widgetId: Int, progress: Long) {
-        sf.edit().putLong("animProgress_$widgetId", progress).apply()
-    }
-
-
-}
-
-private fun dpToPx(dp: Int): Float {
-    val displayMetrics: DisplayMetrics = Resources.getSystem().displayMetrics
-    return dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT)
-}
 
 object Draw2 {
     const val ANIM_DURATION = 5000L
@@ -67,11 +19,21 @@ object Draw2 {
 
     private val dateFormat = SimpleDateFormat("hhmm", Locale.ENGLISH)
     private fun toTime(mills: Long): IntArray {
-        return dateFormat.format(mills).toList().map { it.toString().toInt() }.toIntArray()
+        val intArr = IntArray(4)
+        val stringTime = dateFormat.format(mills)
+        for (i in 0..3) {
+            intArr[i] = stringTime[i].toString().toInt()
+        }
+        return intArr
     }
 
     private fun toTime(calendar: Calendar): IntArray {
-        return dateFormat.format(calendar.time).toList().map { it.toString().toInt() }.toIntArray()
+        val intArr = IntArray(4)
+        val stringTime = dateFormat.format(calendar.time)
+        for (i in 0..3) {
+            intArr[i] = stringTime[i].toString().toInt()
+        }
+        return intArr
     }
 
 
@@ -131,13 +93,13 @@ object Draw2 {
 
             val frontBmp = Bitmap.createScaledBitmap(
                 clocks,
-                (size * 8).roundToInt(),
-                (size * 12).roundToInt(),
+                (size * 8 * 1.035).roundToInt(),
+                (size * 12 * 1.03).roundToInt(),
                 false
             )
             val alphaPaint = Paint()
             alphaPaint.alpha = sf.clocksOpacity(widgetId) * 5
-            canvas.drawBitmap(frontBmp, padding, padding, alphaPaint)
+            canvas.drawBitmap(frontBmp, padding * 0.68f, padding * 0.68f, alphaPaint)
         }
         return baseBg
     }
