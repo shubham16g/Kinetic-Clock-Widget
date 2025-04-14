@@ -8,6 +8,7 @@ import android.renderscript.Allocation
 import android.renderscript.Element
 import android.renderscript.RenderScript
 import android.renderscript.ScriptIntrinsicBlur
+import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import java.text.SimpleDateFormat
 import java.util.*
@@ -34,6 +35,22 @@ object Draw2 {
             intArr[i] = stringTime[i].toString().toInt()
         }
         return intArr
+    }
+
+    private fun loadCircleAsBitmap(context: Context, width: Int, height: Int): Bitmap {
+        val drawable = ContextCompat.getDrawable(context, R.drawable.neomorphic_circle2)
+
+        // Create a bitmap with the specified size
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+
+        // Create a canvas with the bitmap
+        val canvas = Canvas(bitmap)
+
+        // Set the bounds to the specified dimensions and draw
+        drawable?.setBounds(0, 0, width, height)
+        drawable?.draw(canvas)
+
+        return bitmap
     }
 
 
@@ -89,17 +106,42 @@ object Draw2 {
         }
 
         if (sf.showClocks(widgetId)) {
-            val clocks = BitmapFactory.decodeResource(context.resources, R.drawable.clock_frames_1)
-
-            val frontBmp = Bitmap.createScaledBitmap(
-                clocks,
-                (size * 8 * 1.035).roundToInt(),
-                (size * 12 * 1.03).roundToInt(),
-                false
+            /*var singleClock = BitmapFactory.decodeResource(
+                context.resources,
+                R.drawable.single_circle,
+                BitmapFactory.Options().apply {
+                    inScaled = false
+                    inPreferredConfig = Bitmap.Config.ARGB_8888
+                }
             )
-            val alphaPaint = Paint()
-            alphaPaint.alpha = sf.clocksOpacity(widgetId) * 5
-            canvas.drawBitmap(frontBmp, padding * 0.68f, padding * 0.68f, alphaPaint)
+            singleClock = Bitmap.createScaledBitmap(
+                singleClock,
+                size.roundToInt(),
+                size.roundToInt(),
+                false
+            )*/
+            val singleClock = loadCircleAsBitmap(context, size.roundToInt(), size.roundToInt())
+            for (i in 0..7) {
+                for (j in 0..11) {
+                    canvas.drawBitmap(
+                        singleClock,
+                        i * size + padding,
+                        j * size + padding,
+                        null
+                    )
+                }
+            }
+//            val clocks = BitmapFactory.decodeResource(context.resources, R.drawable.clock_frames_1)
+//
+//            val frontBmp = Bitmap.createScaledBitmap(
+//                clocks,
+//                (size * 8 * 1.035).roundToInt(),
+//                (size * 12 * 1.03).roundToInt(),
+//                false
+//            )
+//            val alphaPaint = Paint()
+//            alphaPaint.alpha = sf.clocksOpacity(widgetId) * 5
+//            canvas.drawBitmap(frontBmp, padding * 0.68f, padding * 0.68f, alphaPaint)
         }
         return baseBg
     }
@@ -148,7 +190,7 @@ object Draw2 {
                 getBlock(fraction, pastTime[3], nowArr[3]),
             )
         }
-        return mu.getBitmap(dpToPx(18))
+        return mu.getBitmap(dpToPx(3))
     }
 
     fun createStaticTimeClock(
@@ -171,7 +213,7 @@ object Draw2 {
             ClockData.getLargeArray(nowArr[2]),
             ClockData.getLargeArray(nowArr[3]),
         )
-        return mu.getBitmap(dpToPx(18))
+        return mu.getBitmap(dpToPx(3))
     }
 
     private fun fastBlur16(source: Bitmap, radius: Int, ctx: Context): Bitmap {
@@ -196,6 +238,8 @@ object Draw2 {
         isReArrange: Boolean = false
     ): Array<FloatArray> {
         val arr = ClockData.getLargeArray(before).clone()
+        if (fraction == 0f) return arr
+        if (fraction == 1f) return ClockData.getLargeArray(after)
         translate(fraction, arr, ClockData.getLargeArray(after), isReArrange)
         return arr
     }
