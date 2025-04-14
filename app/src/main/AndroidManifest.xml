@@ -22,7 +22,7 @@
             android:exported="false" />
 
         <receiver
-            android:name=".KineticClockWidget"
+            android:name=".kinetic96.Kinetic96ClockWidget"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

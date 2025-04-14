@@ -14,12 +14,6 @@ import java.util.Calendar
 
 abstract class ClockWidgetProvider : AppWidgetProvider() {
 
-    enum class UpdateType {
-        TIME_TICK,
-        SETTINGS,
-        USER_CLICK
-    }
-
     abstract fun getWidgetClass(): Class<out ClockWidgetProvider>
 
     private fun onTick(context: Context, action: UpdateType, appWidgetIdsA: IntArray?) {

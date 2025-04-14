@@ -7,6 +7,10 @@ import com.shubhamgupta16.advancedwidget.core.WidgetSharedPref
 
 class Sf(context: Context) : WidgetSharedPref(context) {
 
+    companion object {
+        const val BLUR_COLOR = -11
+    }
+
     fun size(widgetId: Int): Float = get(widgetId, "size", dpToPx(20))
 
     fun setSize(widgetId: Int, size: Float) {
@@ -38,12 +42,6 @@ class Sf(context: Context) : WidgetSharedPref(context) {
         put(widgetId, "showBackground", showBackground)
     }
 
-    fun backgroundType(widgetId: Int): String =
-        get(widgetId, "backgroundType", "solid_color")
-
-    fun setBackgroundType(widgetId: Int, type: String) {
-        put(widgetId, "backgroundType", type)
-    }
     fun bgOpacity(widgetId: Int): Int = get(widgetId, "bgOpacity", 100)
 
     fun setBgOpacity(widgetId: Int, opacity: Int) {

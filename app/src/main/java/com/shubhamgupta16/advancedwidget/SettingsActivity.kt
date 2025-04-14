@@ -3,8 +3,8 @@ package com.shubhamgupta16.advancedwidget
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_ID
 import android.content.Intent
-import android.content.SharedPreferences
 import android.graphics.Color
+import android.graphics.drawable.StateListDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -12,11 +12,16 @@ import android.widget.*
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
+import com.google.android.material.slider.Slider
+import com.shubhamgupta16.advancedwidget.core.AnimatedClockPreview
 import com.shubhamgupta16.advancedwidget.core.ClockWidgetProvider.Companion.SETTINGS_KICK
+import com.shubhamgupta16.advancedwidget.kinetic96.Kinetic96ClockPreview
+import com.shubhamgupta16.advancedwidget.kinetic96.Kinetic96ClockWidget
 import yuku.ambilwarna.AmbilWarnaDialog
+import kotlin.math.roundToInt
 
 
 private const val TAG = "SettingsActivity"
@@ -27,29 +32,38 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var widgetPrefs: Sf
 
     // UI elements
+    private lateinit var pinRadioGroup: RadioGroup
+    private lateinit var bgRadioGroup: RadioGroup
+    private lateinit var bgPicker: ImageView
+    private lateinit var bgBlur: ImageView
+    private lateinit var pinPicker: ImageView
     private lateinit var showBackgroundSwitch: SwitchCompat
-    private lateinit var backgroundSettingsGroup: LinearLayout
-    private lateinit var backgroundTypeSpinner: Spinner
-    private lateinit var bgColorButton: ImageButton
-    private lateinit var bgOpacitySeekBar: SeekBar
+    private lateinit var bgOpacitySlider: Slider
     private lateinit var showClocksSwitch: SwitchCompat
-    private lateinit var clocksOpacitySeekBar: SeekBar
-    private lateinit var pinsColorButton: ImageButton
+    private lateinit var clocksOpacitySeekBar: Slider
+    private lateinit var applyButton: Button
 
     // Current values
     private var bgColor: Int = Color.WHITE
     private var pinsColor: Int = Color.BLACK
+    private lateinit var image: ImageView
+    private lateinit var preview: AnimatedClockPreview
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.settings_activity)
+        setContentView(R.layout.activity_settings)
         ViewCompat.setOnApplyWindowInsetsListener(
             findViewById(R.id.appbar)
         ) { v: View, insets: WindowInsetsCompat ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(0, systemBars.top, 0, 0)
+            findViewById<View>(R.id.settings_content).updatePadding(
+                bottom = systemBars.bottom + dpToPx(80).roundToInt()
+            )
+            findViewById<View>(R.id.btn_save_container)
+                .updatePadding(bottom = systemBars.bottom + dpToPx(8).roundToInt())
             insets
         }
         widgetPrefs = Sf(this)
@@ -67,12 +81,20 @@ class SettingsActivity : AppCompatActivity() {
 
         // Initialize UI elements
         initializeUiElements()
+        preview = Kinetic96ClockPreview(widgetId, isSettings = true) { bitmap ->
+            image.setImageBitmap(bitmap)
+        }
+        preview.register(this)
+        image.setOnClickListener {
+            preview.notifyClick(this)
+        }
 
         // Load saved preferences
         loadSavedPreferences()
 
         // Set up listeners
         setupEventListeners()
+        preview.notifySettingsUpdated(this)
 
         val intent = Intent()
         intent.putExtra(EXTRA_APPWIDGET_ID, widgetId)
@@ -80,58 +102,62 @@ class SettingsActivity : AppCompatActivity() {
         sendBroadcast(intent)
     }
 
-//    override fun onSupportNavigateUp(): Boolean {
-//        onBackPressed()
-//        return true
-//    }
 
     private fun initializeUiElements() {
+        // preview image
+        image = findViewById(R.id.image)
         // Background settings
+        pinRadioGroup = findViewById(R.id.pin_radio_group)
         showBackgroundSwitch = findViewById(R.id.switch_show_background)
-        backgroundSettingsGroup = findViewById(R.id.background_settings_group)
-        backgroundTypeSpinner = findViewById(R.id.spinner_background_type)
-        bgColorButton = findViewById(R.id.btn_bg_color)
-        bgOpacitySeekBar = findViewById(R.id.seekbar_bg_opacity)
-
-        // Clock settings
+        bgRadioGroup = findViewById(R.id.background_radio_group)
+        bgOpacitySlider = findViewById(R.id.seekbar_bg_opacity)
         showClocksSwitch = findViewById(R.id.switch_show_clocks)
         clocksOpacitySeekBar = findViewById(R.id.seekbar_clocks_opacity)
+        bgPicker = findViewById(R.id.bg_picker)
+        bgBlur = findViewById(R.id.bg_blur)
+        pinPicker = findViewById(R.id.pin_picker)
+        applyButton = findViewById(R.id.btn_save)
 
-        // Pins settings
-        pinsColorButton = findViewById(R.id.btn_pins_color)
+//        pinRadioGroup.addView(generateRadioButton(Color.RED))
+//        pinRadioGroup.addView(generateRadioButton(Color.BLUE))
+//        pinRadioGroup.addView(generateRadioButton(Color.YELLOW))
+//        pinRadioGroup.addView(generateRadioButton(Color.GRAY))
 
-        // Setup spinner
-        ArrayAdapter.createFromResource(
-            this,
-            R.array.reply_entries,
-            android.R.layout.simple_spinner_item
-        ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            backgroundTypeSpinner.adapter = adapter
+//        get resource array
+        val colors = resources.getStringArray(R.array.colors_array)
+        for (strColor in colors) {
+            val color = Color.parseColor(strColor)
+            pinRadioGroup.addView(generateRadioButton(color))
+            bgRadioGroup.addView(generateRadioButton(color))
         }
+
     }
+
+    private fun generateRadioButton(color: Int): RadioButton {
+        val radioButton = RadioButton(this)
+        radioButton.id = View.generateViewId()
+        radioButton.tag = color
+        radioButton.layoutParams = RadioGroup.LayoutParams(
+            dpToPx(60).roundToInt(),
+            dpToPx(60).roundToInt(),
+        )
+        radioButton.background = Utils.radioDrawable(color)
+        radioButton.buttonDrawable = StateListDrawable()
+        return radioButton
+    }
+
 
     private fun loadSavedPreferences() {
         // Load background settings
         val showBackground = widgetPrefs.showBackground(widgetId)
         showBackgroundSwitch.isChecked = showBackground
-        backgroundSettingsGroup.visibility = if (showBackground) View.VISIBLE else View.GONE
-
-        // Load background type
-        val backgroundType = widgetPrefs.backgroundType(widgetId)
-        val backgroundTypePosition =
-            resources.getStringArray(R.array.reply_values).indexOf(backgroundType)
-        if (backgroundTypePosition != -1) {
-            backgroundTypeSpinner.setSelection(backgroundTypePosition)
-        }
 
         // Load background color
         bgColor = widgetPrefs.bgColor(widgetId)
-        updateColorButton(bgColorButton, bgColor)
-
+        pinsColor = widgetPrefs.color(widgetId)
         // Load background opacity
         val bgOpacity = widgetPrefs.bgOpacity(widgetId)
-        bgOpacitySeekBar.progress = bgOpacity
+        bgOpacitySlider.value = bgOpacity.toFloat()
 
         // Load clock settings
         val showClocks = widgetPrefs.showClocks(widgetId)
@@ -140,96 +166,103 @@ class SettingsActivity : AppCompatActivity() {
 
         // Load clock opacity
         val clocksOpacity = widgetPrefs.clocksOpacity(widgetId)
-        clocksOpacitySeekBar.progress = clocksOpacity
+        clocksOpacitySeekBar.value = clocksOpacity.toFloat()
 
-        // Load pins color
-        pinsColor = widgetPrefs.color(widgetId)
-        updateColorButton(pinsColorButton, pinsColor)
     }
 
     private fun setupEventListeners() {
         // Background visibility
         showBackgroundSwitch.setOnCheckedChangeListener { _, isChecked ->
-            backgroundSettingsGroup.visibility = if (isChecked) View.VISIBLE else View.GONE
             widgetPrefs.setShowBackground(widgetId, isChecked)
+            preview.notifySettingsUpdated(this@SettingsActivity)
             updateWidget()
         }
 
-        // Background type
-        backgroundTypeSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View?,
-                position: Int,
-                id: Long
-            ) {
-                val value = resources.getStringArray(R.array.reply_values)[position]
-                widgetPrefs.setBackgroundType(widgetId, value)
-                updateWidget()
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>) {}
-        }
-
-        // Background color
-        bgColorButton.setOnClickListener {
-            showColorPicker(bgColor) { color ->
-                bgColor = color
-                updateColorButton(bgColorButton, color)
-                widgetPrefs.setBgColor(widgetId, color)
-                updateWidget()
-            }
-        }
-
         // Background opacity
-        bgOpacitySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    widgetPrefs.setBgOpacity(widgetId, progress)
-                    updateWidget()
-                }
+        bgOpacitySlider.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                widgetPrefs.setBgOpacity(widgetId, value.roundToInt())
+                preview.notifySettingsUpdated(this@SettingsActivity)
+                updateWidget()
             }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
+        }
 
         // Show clocks
         showClocksSwitch.setOnCheckedChangeListener { _, isChecked ->
             clocksOpacitySeekBar.isEnabled = isChecked
             widgetPrefs.setShowClocks(widgetId, isChecked)
+            preview.notifySettingsUpdated(this@SettingsActivity)
             updateWidget()
         }
 
         // Clocks opacity
-        clocksOpacitySeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    widgetPrefs.setClocksOpacity(widgetId, progress)
-                    updateWidget()
-                }
-            }
-
-            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
-        })
-
-        // Pins color
-        pinsColorButton.setOnClickListener {
-            showColorPicker(pinsColor) { color ->
-                pinsColor = color
-                updateColorButton(pinsColorButton, color)
-                widgetPrefs.setColor(widgetId, color)
+        clocksOpacitySeekBar.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                widgetPrefs.setClocksOpacity(widgetId, value.roundToInt())
+                preview.notifySettingsUpdated(this@SettingsActivity)
                 updateWidget()
             }
         }
-    }
 
-    private fun updateColorButton(button: ImageButton, color: Int) {
-        button.setBackgroundColor(color)
-        // Set text color to contrast with background
-//        val luminance = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255
-//        button.setTextColor(if (luminance > 0.5) Color.BLACK else Color.WHITE)
+        pinRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val button = pinRadioGroup.findViewById<RadioButton?>(checkedId)
+                ?: return@setOnCheckedChangeListener
+            val selectedColor = button.tag as Int
+            pinsColor = selectedColor
+            widgetPrefs.setColor(widgetId, selectedColor)
+            pinPicker.background = Utils.unSelectedRadioDrawable(Color.WHITE)
+            preview.notifySettingsUpdated(this@SettingsActivity)
+            updateWidget()
+        }
+
+        bgRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val button = bgRadioGroup.findViewById<RadioButton?>(checkedId)
+                ?: return@setOnCheckedChangeListener
+            val selectedColor = button.tag as Int
+            bgColor = selectedColor
+            widgetPrefs.setBgColor(widgetId, selectedColor)
+            pinPicker.background = Utils.unSelectedRadioDrawable(Color.WHITE)
+            bgBlur.background = Utils.unSelectedRadioDrawable(Color.WHITE)
+            preview.notifySettingsUpdated(this@SettingsActivity)
+            updateWidget()
+        }
+
+        pinPicker.setOnClickListener {
+            showColorPicker(pinsColor) { color ->
+                Log.d(TAG, "COLOR:::::PICKER: color: $color")
+                pinRadioGroup.check(View.NO_ID)
+                pinsColor = color
+                widgetPrefs.setColor(widgetId, color)
+                preview.notifySettingsUpdated(this@SettingsActivity)
+                updateWidget()
+                pinPicker.background = Utils.selectedDrawable(color)
+            }
+        }
+
+        bgPicker.setOnClickListener {
+            showColorPicker(pinsColor) { color ->
+                Log.d(TAG, "COLOR:::::PICKER: color: $color")
+                bgRadioGroup.check(View.NO_ID)
+                bgColor = color
+                widgetPrefs.setBgColor(widgetId, color)
+                preview.notifySettingsUpdated(this@SettingsActivity)
+                updateWidget()
+                bgBlur.background = Utils.unSelectedRadioDrawable(Color.WHITE)
+                bgPicker.background = Utils.selectedDrawable(color)
+            }
+        }
+
+        bgBlur.setOnClickListener {
+            val color = Sf.BLUR_COLOR
+            bgRadioGroup.check(View.NO_ID)
+            bgColor = color
+            widgetPrefs.setBgColor(widgetId, color)
+            preview.notifySettingsUpdated(this@SettingsActivity)
+            updateWidget()
+            bgPicker.background = Utils.unSelectedRadioDrawable(Color.WHITE)
+            bgBlur.background = Utils.selectedDrawable(color)
+
+        }
     }
 
     private fun showColorPicker(initialColor: Int, onColorSelected: (Int) -> Unit) {
@@ -245,10 +278,14 @@ class SettingsActivity : AppCompatActivity() {
     // Update the widget
     private fun updateWidget() {
         if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
-        val kickstart = Intent(this, KineticClockWidget::class.java)
+        val kickstart = Intent(this, Kinetic96ClockWidget::class.java)
         kickstart.setAction(SETTINGS_KICK)
         kickstart.setPackage(packageName)
         sendBroadcast(kickstart)
-//        TestWidget.updateAppWidget(this, Sf(this), appWidgetManager, TestWidget.SETTINGS_KICK, widgetId)
+    }
+
+    override fun onDestroy() {
+        preview.unregister(this)
+        super.onDestroy()
     }
 }

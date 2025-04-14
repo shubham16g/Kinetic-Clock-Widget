@@ -1,14 +1,5 @@
 <resources>
-    <!-- Reply Preference -->
-    <string-array name="reply_entries">
-        <item>Solid Color</item>
-        <item>Wallpaper Blur</item>
-    </string-array>
 
-    <string-array name="reply_values">
-        <item>solid_color</item>
-        <item>wall_blur</item>
-    </string-array>
 
     <string-array name="colors_array">
         <item>#fe2e2e</item>

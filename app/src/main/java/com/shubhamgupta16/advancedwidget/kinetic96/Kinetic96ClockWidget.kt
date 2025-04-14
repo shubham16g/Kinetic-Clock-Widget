@@ -1,13 +1,15 @@
-package com.shubhamgupta16.advancedwidget
+package com.shubhamgupta16.advancedwidget.kinetic96
 
 
 import android.content.Context
 import android.graphics.Bitmap
+import com.shubhamgupta16.advancedwidget.Draw2
+import com.shubhamgupta16.advancedwidget.Sf
 import com.shubhamgupta16.advancedwidget.core.AnimatedClockWidgetProvider
 import com.shubhamgupta16.advancedwidget.core.ClockWidgetProvider
 import java.util.Calendar
 
-class KineticClockWidget : AnimatedClockWidgetProvider() {
+class Kinetic96ClockWidget : AnimatedClockWidgetProvider() {
     private var sf: Sf? = null
 
     override val animDuration: Long
@@ -49,7 +51,7 @@ class KineticClockWidget : AnimatedClockWidgetProvider() {
 
 
 
-    override fun getWidgetClass(): Class<out ClockWidgetProvider> = KineticClockWidget::class.java
+    override fun getWidgetClass(): Class<out ClockWidgetProvider> = Kinetic96ClockWidget::class.java
 
 
 }
