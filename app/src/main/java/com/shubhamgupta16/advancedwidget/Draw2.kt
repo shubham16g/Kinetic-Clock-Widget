@@ -118,13 +118,16 @@ object Draw2 {
                 false
             )*/
             val singleClock = loadCircleAsBitmap(context, size.roundToInt(), size.roundToInt())
+            val alphaPaint = Paint().apply {
+                alpha = (sf.clocksOpacity(widgetId) * 2.55f).roundToInt()
+            }
             for (i in 0..7) {
                 for (j in 0..11) {
                     canvas.drawBitmap(
                         singleClock,
                         i * size + padding,
                         j * size + padding,
-                        null
+                        alphaPaint
                     )
                 }
             }

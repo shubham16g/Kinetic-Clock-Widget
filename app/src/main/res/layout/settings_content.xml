@@ -100,7 +100,7 @@
                     android:layout_width="60dp"
                     android:layout_height="60dp"
                     android:padding="7dp"
-                    android:src="@drawable/radio_normal"
+                    android:src="@drawable/bg_blur_icon"
                     android:background="@android:color/transparent" />
             </RadioGroup>
 
