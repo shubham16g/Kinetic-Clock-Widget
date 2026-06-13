@@ -6,4 +6,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="switch_btn_start">#FFFFFF</color>
+    <color name="switch_btn_end">#F6F6F6</color>
+    <color name="power_btn_start">#FFFFFF</color>
+    <color name="power_btn_end">#EEEEEE</color>
 </resources>

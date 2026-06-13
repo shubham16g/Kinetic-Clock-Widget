@@ -13,7 +13,7 @@
     <!-- Sync Preferences -->
     <string name="show_clocks">Show Clocks</string>
     <string name="show_background">Show Background</string>
-    <string name="desc">This app is a CLOCK WIDGET. You can find the WIDGET inside Widget Section of your phone.\n\nAlso Turn-on this button to enable the Widget. (Storage Read Permission is required).</string>
+    <string name="desc">This app is a CLOCK WIDGET. You can find the WIDGET inside Widget Section of your phone.\n\nLong press on home screen, Click on Widgets -> Browse/Search -> Kinetic Clock Widget -> Expand -> Drag to home screen.</string>
     <string name="widget_settings_button">Widget Settings Button</string>
     <string name="footer">App Developed By Acoder.</string>
     <string name="wait_automatically">Wait! The clock will enabled automatically.</string>

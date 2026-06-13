@@ -37,9 +37,9 @@ class MainActivity : AppCompatActivity() {
 
         val storageSwitch = findViewById<SwitchCompat>(R.id.storageSwitch)
         val backgroundSwitch = findViewById<SwitchCompat>(R.id.backgroundSwitch)
-        findViewById<View>(R.id.settings_btn).setOnClickListener {
-            startActivity(Intent(this, DebugTestActivity::class.java))
-        }
+//        findViewById<View>(R.id.settings_btn).setOnClickListener {
+//            startActivity(Intent(this, DebugTestActivity::class.java))
+//        }
         
         // Set initial states
         refreshSwitchStates()
@@ -65,8 +65,14 @@ class MainActivity : AppCompatActivity() {
 
     
     private fun refreshSwitchStates() {
-        findViewById<SwitchCompat>(R.id.storageSwitch).isChecked = Utils.haveMangeStoragePermission(this)
-        findViewById<SwitchCompat>(R.id.backgroundSwitch).isChecked = Utils.hasIgnoreBatteryOptimizationPermission(this)
+        val hasStoragePermission = Utils.haveMangeStoragePermission(this)
+        val hasBgPermission = Utils.hasIgnoreBatteryOptimizationPermission(this)
+
+        findViewById<SwitchCompat>(R.id.storageSwitch).isChecked = hasStoragePermission
+        findViewById<SwitchCompat>(R.id.backgroundSwitch).isChecked = hasBgPermission
+
+        findViewById<View>(R.id.card_storage_permission).visibility = if (hasStoragePermission) View.GONE else View.VISIBLE
+        findViewById<View>(R.id.card_background_permission).visibility = if (hasBgPermission) View.GONE else View.VISIBLE
     }
     
     override fun onResume() {
