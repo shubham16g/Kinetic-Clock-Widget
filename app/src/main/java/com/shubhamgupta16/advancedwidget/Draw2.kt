@@ -68,28 +68,34 @@ object Draw2 {
 
             if (sf.bgColor(widgetId) == Sf.BLUR_COLOR) {
                 if (Utils.haveMangeStoragePermission(context)) {
-                    val wallpaperManager = WallpaperManager.getInstance(context)
-                    val source = wallpaperManager.drawable?.toBitmap(300, 300) ?: return baseBg
-                    val bgBitmap = Bitmap.createScaledBitmap(
-                        fastBlur16(
-                            Bitmap.createBitmap(
-                                source,
-                                source.width / 4,
-                                source.height / 6,
-                                source.width / 2,
-                                source.height / 3
-                            ), 14, context
-                        ), width.roundToInt(), height.roundToInt(), false
-                    )
-                    val alphaPaint = Paint()
-                    alphaPaint.alpha = sf.bgOpacity(widgetId) * 5
-                    canvas.drawBitmap(bgBitmap, 0f, 0f, alphaPaint)
-                    val overlayPaint = Paint()
-                    overlayPaint.color = Color.WHITE
-                    overlayPaint.alpha = 8
-                    canvas.drawRect(
-                        0f, 0f, baseBg.width.toFloat(), baseBg.height.toFloat(), overlayPaint
-                    )
+                    try {
+                        val wallpaperManager = WallpaperManager.getInstance(context)
+                        val source = wallpaperManager.drawable?.toBitmap(300, 300) ?: return baseBg
+                        val bgBitmap = Bitmap.createScaledBitmap(
+                            fastBlur16(
+                                Bitmap.createBitmap(
+                                    source,
+                                    source.width / 4,
+                                    source.height / 6,
+                                    source.width / 2,
+                                    source.height / 3
+                                ), 14, context
+                            ), width.roundToInt(), height.roundToInt(), false
+                        )
+                        val alphaPaint = Paint()
+                        alphaPaint.alpha = sf.bgOpacity(widgetId) * 5
+                        canvas.drawBitmap(bgBitmap, 0f, 0f, alphaPaint)
+                        val overlayPaint = Paint()
+                        overlayPaint.color = Color.WHITE
+                        overlayPaint.alpha = 8
+                        canvas.drawRect(
+                            0f, 0f, baseBg.width.toFloat(), baseBg.height.toFloat(), overlayPaint
+                        )
+                    } catch (e: SecurityException) {
+                        e.printStackTrace()
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
                 }
             } else {
                 val solidPaint = Paint()

@@ -10,6 +10,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
+import android.net.Uri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 
@@ -54,6 +55,15 @@ class MainActivity : AppCompatActivity() {
         backgroundSwitch.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 Utils.requestIgnoreBatteryOptimization(this)
+            }
+        }
+
+        findViewById<View>(R.id.btn_privacy_policy).setOnClickListener {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://kinetic-clock-widget.netlify.app/privacy_policy"))
+                startActivity(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

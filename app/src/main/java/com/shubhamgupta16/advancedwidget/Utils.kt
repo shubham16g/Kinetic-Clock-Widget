@@ -48,26 +48,13 @@ object Utils {
         return true
     }
 
-    @SuppressLint("BatteryLife")
     fun requestIgnoreBatteryOptimization(activity: Activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val powerManager = activity.getSystemService(Context.POWER_SERVICE) as PowerManager
-            val packageName = activity.packageName
-
-            if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
-                try {
-                    val intent =
-                        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                            data = Uri.parse("package:$packageName")
-                        }
-                    activity.startActivity(intent)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    // Fallback: open general battery settings
-                    val fallbackIntent =
-                        Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                    activity.startActivity(fallbackIntent)
-                }
+            try {
+                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                activity.startActivity(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
