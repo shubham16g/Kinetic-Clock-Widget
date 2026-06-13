@@ -15,10 +15,18 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:elevation="10dp"
-            android:gravity="center"
+            app:title="Widget Settings">
 
-            app:navigationIcon="@drawable/ic_baseline_arrow_back_24"
-            app:title="Widget Settings" />
+            <ImageButton
+                android:id="@+id/btn_close"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="end"
+                android:layout_marginEnd="16dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Close"
+                android:src="@drawable/ic_baseline_close_24" />
+        </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
     <ImageView
@@ -31,34 +39,12 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:background="@drawable/sheet"
         android:orientation="vertical"
         android:elevation="10dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-            <include layout="@layout/settings_content" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:background="@color/white"
-            android:id="@+id/btn_save_container"
-            android:layout_width="match_parent"
-            android:elevation="20dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:id="@+id/btn_save"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:text="Apply" />
-        </LinearLayout>
+        <include layout="@layout/settings_content" />
     </LinearLayout>
 </LinearLayout>

@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import android.view.MenuItem
 import androidx.core.view.updatePadding
 import com.google.android.material.slider.Slider
 import com.shubhamgupta16.advancedwidget.core.AnimatedClockPreview
@@ -41,7 +42,6 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var bgOpacitySlider: Slider
     private lateinit var showClocksSwitch: SwitchCompat
     private lateinit var clocksOpacitySeekBar: Slider
-    private lateinit var applyButton: Button
 
     // Current values
     private var bgColor: Int = Color.WHITE
@@ -59,8 +59,8 @@ class SettingsActivity : AppCompatActivity() {
         ) { v: View, insets: WindowInsetsCompat ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(0, systemBars.top, 0, 0)
-            findViewById<View>(R.id.btn_save_container)
-                .updatePadding(bottom = systemBars.bottom + dpToPx(2).roundToInt())
+            findViewById<View>(R.id.settings_scroll_view)
+                .updatePadding(bottom = systemBars.bottom + dpToPx(16).roundToInt())
             insets
         }
         widgetPrefs = Sf(this)
@@ -73,8 +73,10 @@ class SettingsActivity : AppCompatActivity() {
 
         // Setup toolbar
         setSupportActionBar(findViewById(R.id.toolbar))
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         title = if (widgetId != -1) "Widget $widgetId Settings" else "Widget Settings"
+        findViewById<View>(R.id.btn_close).setOnClickListener {
+            finish()
+        }
 
         // Initialize UI elements
         initializeUiElements()
@@ -100,6 +102,8 @@ class SettingsActivity : AppCompatActivity() {
     }
 
 
+
+
     private fun initializeUiElements() {
         // preview image
         image = findViewById(R.id.image)
@@ -113,7 +117,6 @@ class SettingsActivity : AppCompatActivity() {
         bgPicker = findViewById(R.id.bg_picker)
         bgBlur = findViewById(R.id.bg_blur)
         pinPicker = findViewById(R.id.pin_picker)
-        applyButton = findViewById(R.id.btn_save)
 
 //        pinRadioGroup.addView(generateRadioButton(Color.RED))
 //        pinRadioGroup.addView(generateRadioButton(Color.BLUE))
