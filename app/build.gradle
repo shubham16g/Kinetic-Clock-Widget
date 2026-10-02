@@ -4,14 +4,14 @@ plugins {
 }
 
 android {
-    compileSdk 35
+    compileSdk 36
     namespace "com.shubhamgupta16.advancedwidget"
     defaultConfig {
         applicationId "com.shubhamgupta16.advancedwidget"
         minSdk 21
-        targetSdk 35
-        versionCode 2
-        versionName "1.1"
+        targetSdk 36
+        versionCode 3
+        versionName "1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
