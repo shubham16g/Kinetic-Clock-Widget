@@ -33,55 +33,11 @@
             android:text="@string/desc" />
 
         <LinearLayout
-            android:id="@+id/card_storage_permission"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/background_switch_btn"
-            android:elevation="15dp"
-            android:padding="16dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Storage Permission"
-                    android:textSize="16sp"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:text="Required to load the device's current wallpaper and apply the blur effect. (Optional; turn this on if you need the blur effect)."
-                    android:textSize="12sp"
-                    android:textColor="?android:attr/textColorSecondary" />
-            </LinearLayout>
-
-            <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/storageSwitch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp" />
-        </LinearLayout>
-
-        <LinearLayout
             android:id="@+id/card_background_permission"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="20dp"
             android:layout_marginEnd="20dp"
             android:layout_marginBottom="20dp"
             android:background="@drawable/background_switch_btn"

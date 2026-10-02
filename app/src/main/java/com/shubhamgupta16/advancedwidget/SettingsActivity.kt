@@ -36,7 +36,6 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var pinRadioGroup: RadioGroup
     private lateinit var bgRadioGroup: RadioGroup
     private lateinit var bgPicker: ImageView
-    private lateinit var bgBlur: ImageView
     private lateinit var pinPicker: ImageView
     private lateinit var showBackgroundSwitch: SwitchCompat
     private lateinit var bgOpacitySlider: Slider
@@ -115,7 +114,6 @@ class SettingsActivity : AppCompatActivity() {
         showClocksSwitch = findViewById(R.id.switch_show_clocks)
         clocksOpacitySeekBar = findViewById(R.id.seekbar_clocks_opacity)
         bgPicker = findViewById(R.id.bg_picker)
-        bgBlur = findViewById(R.id.bg_blur)
         pinPicker = findViewById(R.id.pin_picker)
 
 //        pinRadioGroup.addView(generateRadioButton(Color.RED))
@@ -178,8 +176,6 @@ class SettingsActivity : AppCompatActivity() {
         }
         if (checkedBgRadio != null) {
             bgRadioGroup.check(checkedBgRadio.id)
-        } else if (bgColor == Sf.BLUR_COLOR) {
-            bgBlur.background = Utils.selectedDrawable(bgColor)
         } else {
             bgPicker.background = Utils.selectedDrawable(bgColor)
         }
@@ -237,7 +233,6 @@ class SettingsActivity : AppCompatActivity() {
             bgColor = selectedColor
             widgetPrefs.setBgColor(widgetId, selectedColor)
             pinPicker.background = Utils.unSelectedRadioDrawable(Color.WHITE)
-            bgBlur.background = Utils.unSelectedRadioDrawable(Color.WHITE)
             preview.notifySettingsUpdated(this@SettingsActivity)
             updateWidget()
         }
@@ -262,21 +257,8 @@ class SettingsActivity : AppCompatActivity() {
                 widgetPrefs.setBgColor(widgetId, color)
                 preview.notifySettingsUpdated(this@SettingsActivity)
                 updateWidget()
-                bgBlur.background = Utils.unSelectedRadioDrawable(Color.WHITE)
                 bgPicker.background = Utils.selectedDrawable(color)
             }
-        }
-
-        bgBlur.setOnClickListener {
-            val color = Sf.BLUR_COLOR
-            bgRadioGroup.check(View.NO_ID)
-            bgColor = color
-            widgetPrefs.setBgColor(widgetId, color)
-            preview.notifySettingsUpdated(this@SettingsActivity)
-            updateWidget()
-            bgPicker.background = Utils.unSelectedRadioDrawable(Color.WHITE)
-            bgBlur.background = Utils.selectedDrawable(color)
-
         }
     }
 

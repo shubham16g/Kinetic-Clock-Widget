@@ -157,19 +157,7 @@
             <h2>1. Information Collection and Use</h2>
             <p>Our App is built with privacy at its core. <strong>We do not collect, store, transmit, or share any personal user data.</strong></p>
 
-            <h3>A. Device Permissions and Wallpaper Customization</h3>
-            <p>To provide custom visual styles, such as the wallpaper blur effect that places a blurred version of your current wallpaper behind the clock widget, the App requires read-only access to your device's wallpaper:</p>
-            <ul>
-                <li><strong>Storage Access:</strong> We request read-only access to your device's external storage (via standard system permissions like <code>READ_EXTERNAL_STORAGE</code> on compatible Android versions) to retrieve the active system wallpaper drawable.</li>
-                <li><strong>Local On-Device Processing:</strong> The retrieved wallpaper image is processed (scaled and blurred) and rendered <strong>strictly on your local device</strong>.</li>
-                <li><strong>No Transmission:</strong> The wallpaper image and any associated data never leave your device. We do not upload, transmit, or share your wallpaper image or any other local files to external servers or third parties.</li>
-            </ul>
-
-            <div class="highlight-box">
-                <p><strong>Security Note:</strong> All image rendering and customization are performed locally within the Android application sandbox. No external network requests are made with your device files.</p>
-            </div>
-
-            <h3>B. Precise Timing and Clock Synchronization</h3>
+            <h3>Precise Timing and Clock Synchronization</h3>
             <ul>
                 <li><strong>Exact Alarms (<code>SCHEDULE_EXACT_ALARM</code>):</strong> The App uses the exact alarm permission to schedule minute-by-minute system ticks, ensuring the Kinetic clock widget updates its hands and digits precisely in real-time. This permission does not collect or store any personal user information.</li>
             </ul>

@@ -7,10 +7,6 @@ import com.shubhamgupta16.advancedwidget.core.WidgetSharedPref
 
 class Sf(context: Context) : WidgetSharedPref(context) {
 
-    companion object {
-        const val BLUR_COLOR = -11
-    }
-
     fun size(widgetId: Int): Float = get(widgetId, "size", dpToPx(20))
 
     fun setSize(widgetId: Int, size: Float) {

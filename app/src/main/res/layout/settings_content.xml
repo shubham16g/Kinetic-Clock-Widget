@@ -94,14 +94,6 @@
                     android:padding="7dp"
                     android:src="@drawable/radio_normal"
                     android:background="@android:color/transparent" />
-
-                <ImageButton
-                    android:id="@+id/bg_blur"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:padding="7dp"
-                    android:src="@drawable/bg_blur_icon"
-                    android:background="@android:color/transparent" />
             </RadioGroup>
 
         </HorizontalScrollView>

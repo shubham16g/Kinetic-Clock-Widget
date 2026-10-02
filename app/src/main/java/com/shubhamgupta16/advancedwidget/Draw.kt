@@ -2,17 +2,12 @@
 //
 //import android.animation.ValueAnimator
 //import android.annotation.SuppressLint
-//import android.app.WallpaperManager
 //import android.content.Context
 //import android.graphics.*
-//import android.renderscript.Allocation
-//import android.renderscript.Element
-//import android.renderscript.RenderScript
-//import android.renderscript.ScriptIntrinsicBlur
 //import android.util.DisplayMetrics
 //import android.util.Log
 //import android.view.animation.AccelerateDecelerateInterpolator
-//import androidx.core.graphics.drawable.toBitmap
+
 //import java.text.SimpleDateFormat
 //import java.util.*
 //
@@ -111,44 +106,12 @@
 //        val canvas = Canvas(baseBg)
 //
 //        if (getPreference("showBackground", true)) {
-//
-//            when (getPreference("backgroundType", "solid_color")) {
-//                "wall_blur" -> {
-//                    if (Utils.haveMangeStoragePermission(context)) {
-//                        val wallpaperManager = WallpaperManager.getInstance(context)
-//                        val source = wallpaperManager.drawable?.toBitmap(300, 300) ?: return
-//                        val bgBitmap = Bitmap.createScaledBitmap(
-//                            fastBlur16(
-//                                Bitmap.createBitmap(
-//                                    source,
-//                                    source.width / 4,
-//                                    source.height / 6,
-//                                    source.width / 2,
-//                                    source.height / 3
-//                                ), 14, context
-//                            ), width, height, false
-//                        )
-//                        val alphaPaint = Paint()
-//                        alphaPaint.alpha = getPreference("bgOpacity", 100) * 5
-//                        canvas.drawBitmap(bgBitmap, 0f, 0f, alphaPaint)
-//                        val overlayPaint = Paint()
-//                        overlayPaint.color = Color.WHITE
-//                        overlayPaint.alpha = 8
-//                        canvas.drawRect(
-//                            0f, 0f, baseBg.width.toFloat(), baseBg.height.toFloat(), overlayPaint
-//                        )
-//                    }
-//                }
-//
-//                else -> {
-//                    val solidPaint = Paint()
-//                    solidPaint.color = getPreference("bgColor", Color.WHITE)
-//                    solidPaint.alpha = getPreference("bgOpacity", 100) * 5
-//                    canvas.drawRect(
-//                        0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), solidPaint
-//                    )
-//                }
-//            }
+//            val solidPaint = Paint()
+//            solidPaint.color = getPreference("bgColor", Color.WHITE)
+//            solidPaint.alpha = getPreference("bgOpacity", 100) * 5
+//            canvas.drawRect(
+//                0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), solidPaint
+//            )
 //        }
 //
 //        if (getPreference("showClocks", true)) {
@@ -201,20 +164,7 @@
 //        return mu.getBitmap(dpToPx(8))
 //    }
 //
-//    private fun fastBlur16(source: Bitmap, radius: Int, ctx: Context): Bitmap {
-//        val bitmap = source.copy(source.config!!, source.isMutable)
-//        val rs = RenderScript.create(ctx)
-//        val input = Allocation.createFromBitmap(
-//            rs, source, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT
-//        )
-//        val output = Allocation.createTyped(rs, input.type)
-//        val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
-//        script.setRadius(radius.toFloat())
-//        script.setInput(input)
-//        script.forEach(output)
-//        output.copyTo(bitmap)
-//        return bitmap
-//    }
+
 //
 //    private fun getBlockMin2(fraction: Float): Array<FloatArray> {
 //        val arr = if (currentTime[3] == 0) ClockData.getLargeArray(9).clone()

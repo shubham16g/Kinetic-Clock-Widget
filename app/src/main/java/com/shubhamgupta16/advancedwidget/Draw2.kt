@@ -1,15 +1,9 @@
 package com.shubhamgupta16.advancedwidget
 
 
-import android.app.WallpaperManager
 import android.content.Context
 import android.graphics.*
-import android.renderscript.Allocation
-import android.renderscript.Element
-import android.renderscript.RenderScript
-import android.renderscript.ScriptIntrinsicBlur
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
@@ -65,47 +59,12 @@ object Draw2 {
         val canvas = Canvas(baseBg)
 
         if (sf.showBackground(widgetId)) {
-
-            if (sf.bgColor(widgetId) == Sf.BLUR_COLOR) {
-                if (Utils.haveMangeStoragePermission(context)) {
-                    try {
-                        val wallpaperManager = WallpaperManager.getInstance(context)
-                        val source = wallpaperManager.drawable?.toBitmap(300, 300) ?: return baseBg
-                        val bgBitmap = Bitmap.createScaledBitmap(
-                            fastBlur16(
-                                Bitmap.createBitmap(
-                                    source,
-                                    source.width / 4,
-                                    source.height / 6,
-                                    source.width / 2,
-                                    source.height / 3
-                                ), 14, context
-                            ), width.roundToInt(), height.roundToInt(), false
-                        )
-                        val alphaPaint = Paint()
-                        alphaPaint.alpha = sf.bgOpacity(widgetId) * 5
-                        canvas.drawBitmap(bgBitmap, 0f, 0f, alphaPaint)
-                        val overlayPaint = Paint()
-                        overlayPaint.color = Color.WHITE
-                        overlayPaint.alpha = 8
-                        canvas.drawRect(
-                            0f, 0f, baseBg.width.toFloat(), baseBg.height.toFloat(), overlayPaint
-                        )
-                    } catch (e: SecurityException) {
-                        e.printStackTrace()
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-            } else {
-                val solidPaint = Paint()
-                solidPaint.color = sf.bgColor(widgetId)
-                solidPaint.alpha = sf.bgOpacity(widgetId) * 5
-                canvas.drawRect(
-                    0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), solidPaint
-                )
-            }
-
+            val solidPaint = Paint()
+            solidPaint.color = sf.bgColor(widgetId)
+            solidPaint.alpha = sf.bgOpacity(widgetId) * 5
+            canvas.drawRect(
+                0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), solidPaint
+            )
         }
 
         if (sf.showClocks(widgetId)) {
@@ -222,20 +181,7 @@ object Draw2 {
         return mu.getBitmap(dpToPx(3))
     }
 
-    private fun fastBlur16(source: Bitmap, radius: Int, ctx: Context): Bitmap {
-        val bitmap = source.copy(source.config!!, source.isMutable)
-        val rs = RenderScript.create(ctx)
-        val input = Allocation.createFromBitmap(
-            rs, source, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT
-        )
-        val output = Allocation.createTyped(rs, input.type)
-        val script = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs))
-        script.setRadius(radius.toFloat())
-        script.setInput(input)
-        script.forEach(output)
-        output.copyTo(bitmap)
-        return bitmap
-    }
+
 
     private fun getBlock(
         fraction: Float,
