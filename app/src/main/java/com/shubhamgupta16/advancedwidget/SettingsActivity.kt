@@ -22,7 +22,8 @@ import com.google.android.material.slider.Slider
 import com.shubhamgupta16.advancedwidget.core.AnimatedClockPreview
 import com.shubhamgupta16.advancedwidget.core.ClockWidgetProvider.Companion.SETTINGS_KICK
 import com.shubhamgupta16.advancedwidget.kinetic96.Kinetic96ClockPreview
-import com.shubhamgupta16.advancedwidget.kinetic96.Kinetic96ClockWidget
+import com.shubhamgupta16.advancedwidget.kinetic96.KineticVerticalClockWidget
+import com.shubhamgupta16.advancedwidget.kinetic96.KineticHorizontalClockWidget
 import yuku.ambilwarna.AmbilWarnaDialog
 import kotlin.math.roundToInt
 
@@ -34,9 +35,6 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var widgetPrefs: Sf
 
     // UI elements
-    private lateinit var layoutRadioGroup: RadioGroup
-    private lateinit var radioVertical: RadioButton
-    private lateinit var radioHorizontal: RadioButton
     private lateinit var pinRadioGroup: RadioGroup
     private lateinit var bgRadioGroup: RadioGroup
     private lateinit var bgPicker: ImageButton
@@ -75,6 +73,15 @@ class SettingsActivity : AppCompatActivity() {
         widgetId = intent.getIntExtra(EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
         Log.d(TAG, "onCreate: widgetId: $widgetId")
 
+        // Determine layout orientation based on widget provider class or stored prefs
+        val providerClassName = AppWidgetManager.getInstance(this).getAppWidgetInfo(widgetId)?.provider?.className
+        val isHorizontal = if (providerClassName != null) {
+            providerClassName.contains("Horizontal", ignoreCase = true)
+        } else {
+            widgetPrefs.isHorizontal(widgetId)
+        }
+        widgetPrefs.setIsHorizontal(widgetId, isHorizontal)
+
         // Setup toolbar
         setSupportActionBar(findViewById(R.id.toolbar))
         title = if (widgetId != -1) "Widget $widgetId Settings" else "Widget Settings"
@@ -108,10 +115,6 @@ class SettingsActivity : AppCompatActivity() {
     private fun initializeUiElements() {
         // preview image
         image = findViewById(R.id.image)
-        // Layout settings
-        layoutRadioGroup = findViewById(R.id.layout_radio_group)
-        radioVertical = findViewById(R.id.radio_layout_vertical)
-        radioHorizontal = findViewById(R.id.radio_layout_horizontal)
         // Background settings
         pinRadioGroup = findViewById(R.id.pin_radio_group)
         showBackgroundSwitch = findViewById(R.id.switch_show_background)
@@ -147,14 +150,6 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun loadSavedPreferences() {
-        // Load layout setting
-        val isHorizontal = widgetPrefs.isHorizontal(widgetId)
-        if (isHorizontal) {
-            radioHorizontal.isChecked = true
-        } else {
-            radioVertical.isChecked = true
-        }
-
         // Load background settings
         val showBackground = widgetPrefs.showBackground(widgetId)
         showBackgroundSwitch.isChecked = showBackground
@@ -205,14 +200,6 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun setupEventListeners() {
-        // Layout selection
-        layoutRadioGroup.setOnCheckedChangeListener { _, checkedId ->
-            val isHorizontal = checkedId == R.id.radio_layout_horizontal
-            widgetPrefs.setIsHorizontal(widgetId, isHorizontal)
-            preview.notifySettingsUpdated(this@SettingsActivity)
-            updateWidget()
-        }
-
         // Background visibility
         showBackgroundSwitch.setOnCheckedChangeListener { _, isChecked ->
             widgetPrefs.setShowBackground(widgetId, isChecked)
@@ -332,9 +319,19 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun updateWidget() {
         if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
-        val kickstart = Intent(this, Kinetic96ClockWidget::class.java)
-        kickstart.setAction(SETTINGS_KICK)
-        kickstart.setPackage(packageName)
+        val providerClassName = AppWidgetManager.getInstance(this).getAppWidgetInfo(widgetId)?.provider?.className
+        val widgetClass = if (providerClassName != null && providerClassName.contains("Horizontal", ignoreCase = true)) {
+            KineticHorizontalClockWidget::class.java
+        } else if (providerClassName != null && providerClassName.contains("Vertical", ignoreCase = true)) {
+            KineticVerticalClockWidget::class.java
+        } else {
+            if (widgetPrefs.isHorizontal(widgetId)) KineticHorizontalClockWidget::class.java else KineticVerticalClockWidget::class.java
+        }
+        val kickstart = Intent(this, widgetClass).apply {
+            setAction(SETTINGS_KICK)
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, intArrayOf(widgetId))
+            setPackage(packageName)
+        }
         sendBroadcast(kickstart)
     }
 

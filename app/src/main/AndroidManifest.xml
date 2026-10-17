@@ -18,7 +18,8 @@
             android:exported="false" />
 
         <receiver
-            android:name=".kinetic96.Kinetic96ClockWidget"
+            android:name=".kinetic96.KineticVerticalClockWidget"
+            android:label="@string/widget_vertical_label"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -32,7 +33,26 @@
 
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/test_widget_info" />
+                android:resource="@xml/widget_vertical_info" />
+        </receiver>
+
+        <receiver
+            android:name=".kinetic96.KineticHorizontalClockWidget"
+            android:label="@string/widget_horizontal_label"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.shubhamgupta16.advancedwidget.MINUTE_TICK" />
+                <action android:name="com.shubhamgupta16.advancedwidget.WIDGET_CLICK" />
+                <action android:name="com.shubhamgupta16.advancedwidget.SETTINGS_KICK" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_horizontal_info" />
         </receiver>
         <receiver
             android:name=".BootCompletedBroadcastReceiver"

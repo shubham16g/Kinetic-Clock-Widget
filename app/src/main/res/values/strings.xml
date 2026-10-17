@@ -24,5 +24,9 @@
     <string name="footer">App Developed By Acoder.</string>
     <string name="wait_automatically">Wait! The clock will enabled automatically.</string>
     <string name="clock_image_desc">Clock Image</string>
+    <string name="widget_vertical_label">Kinetic Clock (Vertical)</string>
+    <string name="widget_vertical_description">Vertical layout kinetic clock widget</string>
+    <string name="widget_horizontal_label">Kinetic Clock (Horizontal)</string>
+    <string name="widget_horizontal_description">Horizontal layout kinetic clock widget</string>
     <string name="title_widget_settings">Widget Settings</string>
 </resources>
