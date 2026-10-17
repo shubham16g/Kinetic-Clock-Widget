@@ -19,6 +19,34 @@ interface ClockAnimation {
         maxRow: Int
     ): Float
 
+    fun getClockPins(
+        fraction: Float,
+        currentPin1: Float,
+        currentPin2: Float,
+        afterPin1: Float,
+        afterPin2: Float,
+        col: Int,
+        row: Int,
+        maxCol: Int,
+        maxRow: Int
+    ): FloatArray {
+        val p = getClockProgress(fraction, col, row, maxCol, maxRow)
+        return floatArrayOf(
+            update(p, currentPin1, afterPin1 + 360f, true),
+            update(p, currentPin2 + 360f, afterPin2, false)
+        )
+    }
+
+    companion object {
+        fun update(r: Float, _pre: Float, _post: Float, clockwise: Boolean): Float {
+            var pre = _pre
+            var post = _post
+            if (clockwise && pre > post) post += 360f
+            else if (!clockwise && post > pre) pre += 360f
+            return (post - pre) * r + pre
+        }
+    }
+
     object Wave : ClockAnimation {
         override val name: String = "Wave"
         const val EACH_CLOCK_DURATION = 3500L
@@ -63,6 +91,65 @@ interface ClockAnimation {
             return linearProgress * linearProgress * (3f - 2f * linearProgress)
         }
     }
+
+    object DirectionalWave : ClockAnimation {
+        override val name: String = "Directional Wave"
+        const val EACH_PHASE_CLOCK_DURATION = 1800L
+        const val EACH_PHASE_WAVE_DELAY = 700L
+        const val EACH_PHASE_TOTAL = EACH_PHASE_CLOCK_DURATION + EACH_PHASE_WAVE_DELAY
+        override val durationMs: Long = EACH_PHASE_TOTAL * 2L
+        private const val TARGET_ANGLE = 225f
+
+        override fun getClockProgress(
+            fraction: Float,
+            col: Int,
+            row: Int,
+            maxCol: Int,
+            maxRow: Int
+        ): Float {
+            val dMax = (maxCol + maxRow).toFloat()
+            val normalizedDist = (col + row) / dMax
+            val phaseFraction = if (fraction < 0.5f) fraction * 2f else (fraction - 0.5f) * 2f
+            val currentMs = phaseFraction * EACH_PHASE_TOTAL.toFloat()
+            val startMs = normalizedDist * EACH_PHASE_WAVE_DELAY.toFloat()
+            val endMs = startMs + EACH_PHASE_CLOCK_DURATION.toFloat()
+            val linearProgress = when {
+                currentMs <= startMs -> 0f
+                currentMs >= endMs -> 1f
+                else -> (currentMs - startMs) / EACH_PHASE_CLOCK_DURATION.toFloat()
+            }
+            return linearProgress * linearProgress * (3f - 2f * linearProgress)
+        }
+
+        override fun getClockPins(
+            fraction: Float,
+            currentPin1: Float,
+            currentPin2: Float,
+            afterPin1: Float,
+            afterPin2: Float,
+            col: Int,
+            row: Int,
+            maxCol: Int,
+            maxRow: Int
+        ): FloatArray {
+            val progress = getClockProgress(fraction, col, row, maxCol, maxRow)
+
+            val endPhase1Hand1 = update(1f, currentPin1, TARGET_ANGLE, true)
+            val endPhase1Hand2 = update(1f, currentPin2, TARGET_ANGLE, false)
+
+            return if (fraction < 0.5f) {
+                floatArrayOf(
+                    update(progress, currentPin1, TARGET_ANGLE, true),
+                    update(progress, currentPin2, TARGET_ANGLE, false)
+                )
+            } else {
+                floatArrayOf(
+                    update(progress, endPhase1Hand1, afterPin1, true),
+                    update(progress, endPhase1Hand2, afterPin2, false)
+                )
+            }
+        }
+    }
 }
 
 object Draw2 {
@@ -72,7 +159,8 @@ object Draw2 {
 
     private val animationsList = mutableListOf<ClockAnimation>(
         ClockAnimation.Wave,
-        ClockAnimation.Simultaneous
+        ClockAnimation.Simultaneous,
+        ClockAnimation.DirectionalWave
     )
 
     val animations: List<ClockAnimation>
@@ -320,7 +408,7 @@ object Draw2 {
             val current = preArr[i]
             val after = postArr[i]
 
-            val clockProgress = if (isReArrange) {
+            if (isReArrange) {
                 val col = if (isHorizontal) {
                     blockIndex * 4 + (i % 4)
                 } else {
@@ -331,17 +419,22 @@ object Draw2 {
                 } else {
                     (blockIndex / 2) * 6 + (i / 4)
                 }
-                animation.getClockProgress(r, col, row, maxCol, maxRow)
+                val pins = animation.getClockPins(
+                    r,
+                    current[0],
+                    current[1],
+                    after[0],
+                    after[1],
+                    col,
+                    row,
+                    maxCol,
+                    maxRow
+                )
+                outArr[i][0] = pins[0]
+                outArr[i][1] = pins[1]
             } else {
-                r
-            }
-
-            if (isReArrange) {
-                outArr[i][0] = update(clockProgress, current[0], after[0] + 360f, true)
-                outArr[i][1] = update(clockProgress, current[1] + 360f, after[1], false)
-            } else {
-                outArr[i][0] = update(clockProgress, current[0], after[0], true)
-                outArr[i][1] = update(clockProgress, current[1], after[1], false)
+                outArr[i][0] = update(r, current[0], after[0], true)
+                outArr[i][1] = update(r, current[1], after[1], false)
             }
         }
     }
