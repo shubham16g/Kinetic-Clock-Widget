@@ -7,6 +7,7 @@ import kotlin.math.sin
 
 class CanvasMaker(
     baseBg: Bitmap,
+    targetBitmap: Bitmap = Bitmap.createBitmap(baseBg.width, baseBg.height, Bitmap.Config.ARGB_8888),
     private val stroke: Float,
     private val size: Float,
     private val padding: Float,
@@ -15,12 +16,17 @@ class CanvasMaker(
     color: Int
 ) {
 
-    private val bg: Bitmap = baseBg.copy(baseBg.config!!, baseBg.isMutable)
+    private val bg: Bitmap = targetBitmap
     private val canvas: Canvas = Canvas(bg)
     private val paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val circlePaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val rectF = RectF()
+    private val clipPath = Path()
 
     init {
+        bg.eraseColor(Color.TRANSPARENT)
+        canvas.drawBitmap(baseBg, 0f, 0f, null)
+
         paint.style = Paint.Style.STROKE
         paint.isDither = true
         paint.strokeJoin = Paint.Join.ROUND
@@ -47,10 +53,10 @@ class CanvasMaker(
         val top = margin + padding + size / 2f
         val left = margin + padding + size / 2f
 
-        val rectF = RectF(margin, margin, bg.width.toFloat() - margin, bg.height.toFloat() - margin)
-        val clipPath = Path().apply {
-            addRoundRect(rectF, borderRadius, borderRadius, Path.Direction.CW)
-        }
+        rectF.set(margin, margin, bg.width.toFloat() - margin, bg.height.toFloat() - margin)
+        clipPath.reset()
+        clipPath.addRoundRect(rectF, borderRadius, borderRadius, Path.Direction.CW)
+
         canvas.save()
         canvas.clipPath(clipPath)
 
@@ -89,9 +95,10 @@ class CanvasMaker(
     }
 
     private fun drawLine(angle: Float, radius: Float, x: Float, y: Float) {
-        val toX = x + radius * sin(Math.toRadians(angle.toDouble()))
-        val toY = y + radius * cos(Math.toRadians(angle.toDouble()))
-        canvas.drawLine(x, y, toX.toFloat(), toY.toFloat(), paint)
+        val rad = angle * 0.017453292f
+        val toX = x + radius * sin(rad)
+        val toY = y + radius * cos(rad)
+        canvas.drawLine(x, y, toX, toY, paint)
     }
 
     private fun drawCircle(x: Float, y: Float) {

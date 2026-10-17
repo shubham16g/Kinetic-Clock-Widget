@@ -9,7 +9,9 @@ import java.util.*
 import kotlin.math.roundToInt
 
 object Draw2 {
-    const val ANIM_DURATION = 5000L
+    const val EACH_CLOCK_DURATION = 3500L
+    const val WAVE_DELAY_DURATION = 1000L
+    const val ANIM_DURATION = EACH_CLOCK_DURATION + WAVE_DELAY_DURATION
 
 
     private val dateFormat = SimpleDateFormat("hhmm", Locale.ENGLISH)
@@ -103,6 +105,18 @@ object Draw2 {
         return baseBg
     }
 
+    private val bitmapCache = HashMap<Int, Bitmap>()
+
+    private fun getFrameBitmap(widgetId: Int, width: Int, height: Int): Bitmap {
+        val existing = bitmapCache[widgetId]
+        if (existing != null && !existing.isRecycled && existing.width == width && existing.height == height) {
+            return existing
+        }
+        val newBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        bitmapCache[widgetId] = newBitmap
+        return newBitmap
+    }
+
     fun createTimeClockFrame(
         baseBg: Bitmap,
         sf: Sf,
@@ -110,10 +124,14 @@ object Draw2 {
         currentTime: Calendar,
         fraction: Float,
         currentSec: Int,
-        isReArrange: Boolean = false
+        isReArrange: Boolean = false,
+        eachClockDuration: Long = EACH_CLOCK_DURATION,
+        waveDelayDuration: Long = WAVE_DELAY_DURATION
     ): Bitmap {
+        val targetBitmap = getFrameBitmap(widgetId, baseBg.width, baseBg.height)
         val mu = CanvasMaker(
             baseBg,
+            targetBitmap,
             sf.stroke(widgetId),
             sf.size(widgetId),
             sf.padding(widgetId),
@@ -128,28 +146,28 @@ object Draw2 {
             if (currentSec >= 55) {
                 val futureArr = toTime(currentTime.timeInMillis + (1000 * 60))
                 mu.drawClocks(
-                    getBlock(fraction, nowArr[0], futureArr[0], true),
-                    getBlock(fraction, nowArr[1], futureArr[1], true),
-                    getBlock(fraction, nowArr[2], futureArr[2], true),
-                    getBlock(fraction, nowArr[3], futureArr[3], true),
+                    getBlock(fraction, nowArr[0], futureArr[0], true, 0, isHorizontal, eachClockDuration, waveDelayDuration),
+                    getBlock(fraction, nowArr[1], futureArr[1], true, 1, isHorizontal, eachClockDuration, waveDelayDuration),
+                    getBlock(fraction, nowArr[2], futureArr[2], true, 2, isHorizontal, eachClockDuration, waveDelayDuration),
+                    getBlock(fraction, nowArr[3], futureArr[3], true, 3, isHorizontal, eachClockDuration, waveDelayDuration),
                     isHorizontal = isHorizontal
                 )
             } else {
                 mu.drawClocks(
-                    getBlock(fraction, nowArr[0], nowArr[0], true),
-                    getBlock(fraction, nowArr[1], nowArr[1], true),
-                    getBlock(fraction, nowArr[2], nowArr[2], true),
-                    getBlock(fraction, nowArr[3], nowArr[3], true),
+                    getBlock(fraction, nowArr[0], nowArr[0], true, 0, isHorizontal, eachClockDuration, waveDelayDuration),
+                    getBlock(fraction, nowArr[1], nowArr[1], true, 1, isHorizontal, eachClockDuration, waveDelayDuration),
+                    getBlock(fraction, nowArr[2], nowArr[2], true, 2, isHorizontal, eachClockDuration, waveDelayDuration),
+                    getBlock(fraction, nowArr[3], nowArr[3], true, 3, isHorizontal, eachClockDuration, waveDelayDuration),
                     isHorizontal = isHorizontal
                 )
             }
         } else {
             val pastTime = toTime(currentTime.timeInMillis - (1000 * 60))
             mu.drawClocks(
-                getBlock(fraction, pastTime[0], nowArr[0]),
-                getBlock(fraction, pastTime[1], nowArr[1]),
-                getBlock(fraction, pastTime[2], nowArr[2]),
-                getBlock(fraction, pastTime[3], nowArr[3]),
+                getBlock(fraction, pastTime[0], nowArr[0], false, 0, isHorizontal, eachClockDuration, waveDelayDuration),
+                getBlock(fraction, pastTime[1], nowArr[1], false, 1, isHorizontal, eachClockDuration, waveDelayDuration),
+                getBlock(fraction, pastTime[2], nowArr[2], false, 2, isHorizontal, eachClockDuration, waveDelayDuration),
+                getBlock(fraction, pastTime[3], nowArr[3], false, 3, isHorizontal, eachClockDuration, waveDelayDuration),
                 isHorizontal = isHorizontal
             )
         }
@@ -162,8 +180,10 @@ object Draw2 {
         widgetId: Int,
         currentTime: Calendar
     ): Bitmap {
+        val targetBitmap = getFrameBitmap(widgetId, baseBg.width, baseBg.height)
         val mu = CanvasMaker(
             baseBg,
+            targetBitmap,
             sf.stroke(widgetId),
             sf.size(widgetId),
             sf.padding(widgetId),
@@ -182,43 +202,91 @@ object Draw2 {
         return mu.getBitmap()
     }
 
-
-
     private fun getBlock(
         fraction: Float,
         before: Int,
         after: Int,
-        isReArrange: Boolean = false
+        isReArrange: Boolean = false,
+        blockIndex: Int = 0,
+        isHorizontal: Boolean = true,
+        eachClockDuration: Long = EACH_CLOCK_DURATION,
+        waveDelayDuration: Long = WAVE_DELAY_DURATION
     ): Array<FloatArray> {
-        val arr = ClockData.getLargeArray(before).clone()
-        if (fraction == 0f) return arr
-        if (fraction == 1f) return ClockData.getLargeArray(after)
-        translate(fraction, arr, ClockData.getLargeArray(after), isReArrange)
-        return arr
+        val beforeArr = ClockData.getLargeArray(before)
+        if (fraction == 0f) return beforeArr
+        val afterArr = ClockData.getLargeArray(after)
+        if (fraction == 1f) return afterArr
+
+        val resultArr = Array(24) { FloatArray(2) }
+        translate(
+            fraction,
+            beforeArr,
+            afterArr,
+            resultArr,
+            isReArrange,
+            blockIndex,
+            isHorizontal,
+            eachClockDuration,
+            waveDelayDuration
+        )
+        return resultArr
     }
 
     private fun translate(
         r: Float,
         preArr: Array<FloatArray>,
         postArr: Array<FloatArray>,
-        isReArrange: Boolean = false
-    ): Array<FloatArray> {
+        outArr: Array<FloatArray>,
+        isReArrange: Boolean = false,
+        blockIndex: Int = 0,
+        isHorizontal: Boolean = true,
+        eachClockDuration: Long = EACH_CLOCK_DURATION,
+        waveDelayDuration: Long = WAVE_DELAY_DURATION
+    ) {
+        val maxCol = if (isHorizontal) 15 else 7
+        val maxRow = if (isHorizontal) 5 else 11
+        val dMax = (maxCol + maxRow).toFloat()
+        val totalDuration = (eachClockDuration + waveDelayDuration).toFloat()
+        val currentMs = r * totalDuration
+        val clockDurationFloat = eachClockDuration.coerceAtLeast(1L).toFloat()
+
         for (i in preArr.indices) {
             val current = preArr[i]
             val after = postArr[i]
-            if (isReArrange) {
-                preArr[i] = floatArrayOf(
-                    update(r, current[0], after[0] + 360, true),
-                    update(r, current[1] + 360, after[1], false)
-                )
+
+            val clockProgress = if (isReArrange) {
+                val col = if (isHorizontal) {
+                    blockIndex * 4 + (i % 4)
+                } else {
+                    (blockIndex % 2) * 4 + (i % 4)
+                }
+                val row = if (isHorizontal) {
+                    i / 4
+                } else {
+                    (blockIndex / 2) * 6 + (i / 4)
+                }
+                val normalizedDist = (col + row) / dMax
+                val startMs = normalizedDist * waveDelayDuration
+                val endMs = startMs + eachClockDuration
+                val linearProgress = when {
+                    currentMs <= startMs -> 0f
+                    currentMs >= endMs -> 1f
+                    else -> (currentMs - startMs) / clockDurationFloat
+                }
+                // SmoothStep easing for fluid hand rotation
+                linearProgress * linearProgress * (3f - 2f * linearProgress)
             } else {
-                preArr[i] = floatArrayOf(
-                    update(r, current[0], after[0], true), update(r, current[1], after[1], false)
-                )
+                r
+            }
+
+            if (isReArrange) {
+                outArr[i][0] = update(clockProgress, current[0], after[0] + 360f, true)
+                outArr[i][1] = update(clockProgress, current[1] + 360f, after[1], false)
+            } else {
+                outArr[i][0] = update(clockProgress, current[0], after[0], true)
+                outArr[i][1] = update(clockProgress, current[1], after[1], false)
             }
         }
-
-        return preArr
     }
 
     private fun update(r: Float, _pre: Float, _post: Float, clockwise: Boolean): Float {
