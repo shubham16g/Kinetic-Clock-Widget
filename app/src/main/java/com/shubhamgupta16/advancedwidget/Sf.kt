@@ -13,11 +13,16 @@ class Sf(context: Context) : WidgetSharedPref(context) {
         put(widgetId, "size", size)
     }
 
-    fun padding(widgetId: Int): Float =
-        (size(widgetId) / dpToPx(15)) * get(widgetId, "padding", dpToPx(8))
+    fun padding(widgetId: Int): Float = get(widgetId, "padding", dpToPx(8))
 
     fun setPadding(widgetId: Int, padding: Float) {
         put(widgetId, "padding", padding)
+    }
+
+    fun margin(widgetId: Int): Float = get(widgetId, "margin", dpToPx(0))
+
+    fun setMargin(widgetId: Int, margin: Float) {
+        put(widgetId, "margin", margin)
     }
 
     fun stroke(widgetId: Int): Float = get(widgetId, "stroke", size(widgetId) / 15f)
@@ -60,6 +65,18 @@ class Sf(context: Context) : WidgetSharedPref(context) {
 
     fun setClocksOpacity(widgetId: Int, opacity: Int) {
         put(widgetId, "clocksOpacity", opacity)
+    }
+
+    fun isHorizontal(widgetId: Int): Boolean = get(widgetId, "isHorizontal", false)
+
+    fun setIsHorizontal(widgetId: Int, isHorizontal: Boolean) {
+        put(widgetId, "isHorizontal", isHorizontal)
+    }
+
+    fun borderRadius(widgetId: Int): Float = get(widgetId, "borderRadius", dpToPx(12))
+
+    fun setBorderRadius(widgetId: Int, borderRadius: Float) {
+        put(widgetId, "borderRadius", borderRadius)
     }
 
 }

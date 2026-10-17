@@ -33,12 +33,18 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var widgetPrefs: Sf
 
     // UI elements
+    private lateinit var layoutRadioGroup: RadioGroup
+    private lateinit var radioVertical: RadioButton
+    private lateinit var radioHorizontal: RadioButton
     private lateinit var pinRadioGroup: RadioGroup
     private lateinit var bgRadioGroup: RadioGroup
     private lateinit var bgPicker: ImageView
     private lateinit var pinPicker: ImageView
     private lateinit var showBackgroundSwitch: SwitchCompat
     private lateinit var bgOpacitySlider: Slider
+    private lateinit var borderRadiusSlider: Slider
+    private lateinit var paddingSlider: Slider
+    private lateinit var marginSlider: Slider
     private lateinit var showClocksSwitch: SwitchCompat
     private lateinit var clocksOpacitySeekBar: Slider
 
@@ -106,11 +112,18 @@ class SettingsActivity : AppCompatActivity() {
     private fun initializeUiElements() {
         // preview image
         image = findViewById(R.id.image)
+        // Layout settings
+        layoutRadioGroup = findViewById(R.id.layout_radio_group)
+        radioVertical = findViewById(R.id.radio_layout_vertical)
+        radioHorizontal = findViewById(R.id.radio_layout_horizontal)
         // Background settings
         pinRadioGroup = findViewById(R.id.pin_radio_group)
         showBackgroundSwitch = findViewById(R.id.switch_show_background)
         bgRadioGroup = findViewById(R.id.background_radio_group)
         bgOpacitySlider = findViewById(R.id.seekbar_bg_opacity)
+        borderRadiusSlider = findViewById(R.id.seekbar_border_radius)
+        paddingSlider = findViewById(R.id.seekbar_padding)
+        marginSlider = findViewById(R.id.seekbar_margin)
         showClocksSwitch = findViewById(R.id.switch_show_clocks)
         clocksOpacitySeekBar = findViewById(R.id.seekbar_clocks_opacity)
         bgPicker = findViewById(R.id.bg_picker)
@@ -146,6 +159,14 @@ class SettingsActivity : AppCompatActivity() {
 
 
     private fun loadSavedPreferences() {
+        // Load layout setting
+        val isHorizontal = widgetPrefs.isHorizontal(widgetId)
+        if (isHorizontal) {
+            radioHorizontal.isChecked = true
+        } else {
+            radioVertical.isChecked = true
+        }
+
         // Load background settings
         val showBackground = widgetPrefs.showBackground(widgetId)
         showBackgroundSwitch.isChecked = showBackground
@@ -156,6 +177,21 @@ class SettingsActivity : AppCompatActivity() {
         // Load background opacity
         val bgOpacity = widgetPrefs.bgOpacity(widgetId)
         bgOpacitySlider.value = bgOpacity.toFloat()
+
+        // Load border radius
+        val borderRadiusPx = widgetPrefs.borderRadius(widgetId)
+        val borderRadiusDp = pxToDp(borderRadiusPx)
+        borderRadiusSlider.value = borderRadiusDp.coerceIn(0f, 40f)
+
+        // Load padding
+        val paddingPx = widgetPrefs.padding(widgetId)
+        val paddingDp = pxToDp(paddingPx)
+        paddingSlider.value = paddingDp.coerceIn(0f, 30f)
+
+        // Load margin
+        val marginPx = widgetPrefs.margin(widgetId)
+        val marginDp = pxToDp(marginPx)
+        marginSlider.value = marginDp.coerceIn(0f, 30f)
 
         // Load clock settings
         val showClocks = widgetPrefs.showClocks(widgetId)
@@ -182,6 +218,14 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun setupEventListeners() {
+        // Layout selection
+        layoutRadioGroup.setOnCheckedChangeListener { _, checkedId ->
+            val isHorizontal = checkedId == R.id.radio_layout_horizontal
+            widgetPrefs.setIsHorizontal(widgetId, isHorizontal)
+            preview.notifySettingsUpdated(this@SettingsActivity)
+            updateWidget()
+        }
+
         // Background visibility
         showBackgroundSwitch.setOnCheckedChangeListener { _, isChecked ->
             widgetPrefs.setShowBackground(widgetId, isChecked)
@@ -193,6 +237,33 @@ class SettingsActivity : AppCompatActivity() {
         bgOpacitySlider.addOnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 widgetPrefs.setBgOpacity(widgetId, value.roundToInt())
+                preview.notifySettingsUpdated(this@SettingsActivity)
+                updateWidget()
+            }
+        }
+
+        // Border Radius
+        borderRadiusSlider.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                widgetPrefs.setBorderRadius(widgetId, dpToPx(value.roundToInt()))
+                preview.notifySettingsUpdated(this@SettingsActivity)
+                updateWidget()
+            }
+        }
+
+        // Padding
+        paddingSlider.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                widgetPrefs.setPadding(widgetId, dpToPx(value.roundToInt()))
+                preview.notifySettingsUpdated(this@SettingsActivity)
+                updateWidget()
+            }
+        }
+
+        // Margin
+        marginSlider.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                widgetPrefs.setMargin(widgetId, dpToPx(value.roundToInt()))
                 preview.notifySettingsUpdated(this@SettingsActivity)
                 updateWidget()
             }

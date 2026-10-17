@@ -5,9 +5,17 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 
-class CanvasMaker(baseBg: Bitmap, private val stroke: Float, private val size: Float, private val padding: Float, color: Int) {
+class CanvasMaker(
+    baseBg: Bitmap,
+    private val stroke: Float,
+    private val size: Float,
+    private val padding: Float,
+    private val margin: Float,
+    private val borderRadius: Float,
+    color: Int
+) {
 
-    private val bg:Bitmap = baseBg.copy(baseBg.config!!, baseBg.isMutable)
+    private val bg: Bitmap = baseBg.copy(baseBg.config!!, baseBg.isMutable)
     private val canvas: Canvas = Canvas(bg)
     private val paint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val circlePaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -32,16 +40,32 @@ class CanvasMaker(baseBg: Bitmap, private val stroke: Float, private val size: F
         block1: Array<FloatArray>,
         block2: Array<FloatArray>,
         block3: Array<FloatArray>,
-        block4: Array<FloatArray>
+        block4: Array<FloatArray>,
+        isHorizontal: Boolean = false
     ) {
 
-        val top = padding + size/2f
-        val left = padding + size/2f
+        val top = margin + padding + size / 2f
+        val left = margin + padding + size / 2f
 
-        drawBlock(block1, left, top)
-        drawBlock(block2, left + size * 4f, top)
-        drawBlock(block3, left, top + size * 6f)
-        drawBlock(block4, left + size * 4f, top + size * 6f)
+        val rectF = RectF(margin, margin, bg.width.toFloat() - margin, bg.height.toFloat() - margin)
+        val clipPath = Path().apply {
+            addRoundRect(rectF, borderRadius, borderRadius, Path.Direction.CW)
+        }
+        canvas.save()
+        canvas.clipPath(clipPath)
+
+        if (isHorizontal) {
+            drawBlock(block1, left, top)
+            drawBlock(block2, left + size * 4f, top)
+            drawBlock(block3, left + size * 8f, top)
+            drawBlock(block4, left + size * 12f, top)
+        } else {
+            drawBlock(block1, left, top)
+            drawBlock(block2, left + size * 4f, top)
+            drawBlock(block3, left, top + size * 6f)
+            drawBlock(block4, left + size * 4f, top + size * 6f)
+        }
+        canvas.restore()
     }
 
     private fun drawBlock(
@@ -75,25 +99,7 @@ class CanvasMaker(baseBg: Bitmap, private val stroke: Float, private val size: F
     }
 
 
-    fun getBitmap(roundPx: Float): Bitmap {
-        return roundCornered(bg, roundPx)
-    }
-
-    private fun roundCornered(bitmap: Bitmap, roundPx: Float): Bitmap {
-        val result = Bitmap.createBitmap(
-            bitmap.width, bitmap.height,
-            Bitmap.Config.ARGB_8888
-        )
-        val canvas = Canvas(result)
-        val paint = Paint()
-        val rect = Rect(0, 0, bitmap.width, bitmap.height)
-        val rectF = RectF(rect)
-        paint.isAntiAlias = true
-        canvas.drawARGB(0, 0, 0, 0)
-        paint.color = Color.BLUE
-        canvas.drawRoundRect(rectF, roundPx, roundPx, paint)
-        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
-        canvas.drawBitmap(bitmap, rect, rect, paint)
-        return result
+    fun getBitmap(): Bitmap {
+        return bg
     }
 }

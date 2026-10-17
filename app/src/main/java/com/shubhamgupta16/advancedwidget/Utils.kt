@@ -122,3 +122,7 @@ object Utils {
          Resources.getSystem().displayMetrics
      )
 }
+
+fun pxToDp(px: Float): Float {
+    return px / Resources.getSystem().displayMetrics.density
+}

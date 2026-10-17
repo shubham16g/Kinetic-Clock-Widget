@@ -50,63 +50,55 @@ object Draw2 {
 
     fun buildBG(context: Context, sf: Sf, widgetId: Int): Bitmap {
         val size = sf.size(widgetId) // 15
-        val padding = sf.padding(widgetId) // 15
-        val height = size * 12 + padding * 2
-        val width = size * 8 + padding * 2
+        val padding = sf.padding(widgetId) // inner padding
+        val margin = sf.margin(widgetId) // outer margin
+        val borderRadius = sf.borderRadius(widgetId)
+        val isHorizontal = sf.isHorizontal(widgetId)
+        val cols = if (isHorizontal) 16 else 8
+        val rows = if (isHorizontal) 6 else 12
+
+        val height = size * rows + padding * 2 + margin * 2
+        val width = size * cols + padding * 2 + margin * 2
 
         val baseBg =
             Bitmap.createBitmap(width.roundToInt(), height.roundToInt(), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(baseBg)
 
+        val rectF = RectF(margin, margin, width - margin, height - margin)
+
         if (sf.showBackground(widgetId)) {
-            val solidPaint = Paint()
-            solidPaint.color = sf.bgColor(widgetId)
-            solidPaint.alpha = sf.bgOpacity(widgetId) * 5
-            canvas.drawRect(
-                0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), solidPaint
-            )
+            val solidPaint = Paint().apply {
+                color = sf.bgColor(widgetId)
+                alpha = (sf.bgOpacity(widgetId) * 2.55f).roundToInt().coerceIn(0, 255)
+                isAntiAlias = true
+            }
+            canvas.drawRoundRect(rectF, borderRadius, borderRadius, solidPaint)
         }
 
         if (sf.showClocks(widgetId)) {
-            /*var singleClock = BitmapFactory.decodeResource(
-                context.resources,
-                R.drawable.single_circle,
-                BitmapFactory.Options().apply {
-                    inScaled = false
-                    inPreferredConfig = Bitmap.Config.ARGB_8888
-                }
-            )
-            singleClock = Bitmap.createScaledBitmap(
-                singleClock,
-                size.roundToInt(),
-                size.roundToInt(),
-                false
-            )*/
             val singleClock = loadCircleAsBitmap(context, size.roundToInt(), size.roundToInt())
             val alphaPaint = Paint().apply {
                 alpha = (sf.clocksOpacity(widgetId) * 2.55f).roundToInt()
+                isAntiAlias = true
             }
-            for (i in 0..7) {
-                for (j in 0..11) {
+
+            val clipPath = Path().apply {
+                addRoundRect(rectF, borderRadius, borderRadius, Path.Direction.CW)
+            }
+            canvas.save()
+            canvas.clipPath(clipPath)
+
+            for (i in 0 until cols) {
+                for (j in 0 until rows) {
                     canvas.drawBitmap(
                         singleClock,
-                        i * size + padding,
-                        j * size + padding,
+                        i * size + padding + margin,
+                        j * size + padding + margin,
                         alphaPaint
                     )
                 }
             }
-//            val clocks = BitmapFactory.decodeResource(context.resources, R.drawable.clock_frames_1)
-//
-//            val frontBmp = Bitmap.createScaledBitmap(
-//                clocks,
-//                (size * 8 * 1.035).roundToInt(),
-//                (size * 12 * 1.03).roundToInt(),
-//                false
-//            )
-//            val alphaPaint = Paint()
-//            alphaPaint.alpha = sf.clocksOpacity(widgetId) * 5
-//            canvas.drawBitmap(frontBmp, padding * 0.68f, padding * 0.68f, alphaPaint)
+            canvas.restore()
         }
         return baseBg
     }
@@ -125,9 +117,12 @@ object Draw2 {
             sf.stroke(widgetId),
             sf.size(widgetId),
             sf.padding(widgetId),
+            sf.margin(widgetId),
+            sf.borderRadius(widgetId),
             sf.color(widgetId)
         )
         val nowArr = toTime(currentTime)
+        val isHorizontal = sf.isHorizontal(widgetId)
 
         if (isReArrange) {
             if (currentSec >= 55) {
@@ -137,6 +132,7 @@ object Draw2 {
                     getBlock(fraction, nowArr[1], futureArr[1], true),
                     getBlock(fraction, nowArr[2], futureArr[2], true),
                     getBlock(fraction, nowArr[3], futureArr[3], true),
+                    isHorizontal = isHorizontal
                 )
             } else {
                 mu.drawClocks(
@@ -144,6 +140,7 @@ object Draw2 {
                     getBlock(fraction, nowArr[1], nowArr[1], true),
                     getBlock(fraction, nowArr[2], nowArr[2], true),
                     getBlock(fraction, nowArr[3], nowArr[3], true),
+                    isHorizontal = isHorizontal
                 )
             }
         } else {
@@ -153,9 +150,10 @@ object Draw2 {
                 getBlock(fraction, pastTime[1], nowArr[1]),
                 getBlock(fraction, pastTime[2], nowArr[2]),
                 getBlock(fraction, pastTime[3], nowArr[3]),
+                isHorizontal = isHorizontal
             )
         }
-        return mu.getBitmap(dpToPx(3))
+        return mu.getBitmap()
     }
 
     fun createStaticTimeClock(
@@ -169,6 +167,8 @@ object Draw2 {
             sf.stroke(widgetId),
             sf.size(widgetId),
             sf.padding(widgetId),
+            sf.margin(widgetId),
+            sf.borderRadius(widgetId),
             sf.color(widgetId)
         )
         val nowArr = toTime(currentTime)
@@ -177,8 +177,9 @@ object Draw2 {
             ClockData.getLargeArray(nowArr[1]),
             ClockData.getLargeArray(nowArr[2]),
             ClockData.getLargeArray(nowArr[3]),
+            isHorizontal = sf.isHorizontal(widgetId)
         )
-        return mu.getBitmap(dpToPx(3))
+        return mu.getBitmap()
     }
 
 
