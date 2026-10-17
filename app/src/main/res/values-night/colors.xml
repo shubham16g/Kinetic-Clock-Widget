@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="white">#222222</color>
-    <color name="switch_btn_start">#2A2A2A</color>
-    <color name="switch_btn_end">#222222</color>
-    <color name="power_btn_start">#2A2A2A</color>
-    <color name="power_btn_end">#1E1E1E</color>
 </resources>

@@ -35,8 +35,8 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginEnd="12dp"
-                    android:contentDescription="Pins Icon"
-                    android:src="@drawable/ic_baseline_palette_24"
+                    android:contentDescription="Hands Icon"
+                    android:src="@drawable/ic_baseline_access_time_24"
                     app:tint="?attr/colorPrimary" />
 
                 <LinearLayout
@@ -245,7 +245,7 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Section 4: Clocks Details Card -->
+    <!-- Section 4: Dial Details Card -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -271,8 +271,8 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginEnd="12dp"
-                    android:contentDescription="Clocks Icon"
-                    android:src="@drawable/ic_baseline_access_time_24"
+                    android:contentDescription="Dial Icon"
+                    android:src="@drawable/ic_baseline_circle_24"
                     app:tint="?attr/colorPrimary" />
 
                 <LinearLayout

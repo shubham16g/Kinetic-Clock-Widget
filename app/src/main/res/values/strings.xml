@@ -1,15 +1,10 @@
 <resources>
     <string name="app_name">Kinetic Clock Widget</string>
-    <string name="app_widget_description">This is an app widget description</string>
-    <string name="title_activity_settings">Settings</string>
 
     <!-- Preference Titles -->
     <string name="background">Background</string>
-    <string name="clocks">Clocks</string>
-    <string name="pins">Pins</string>
-    <string name="layout">Layout</string>
-    <string name="layout_vertical">Vertical</string>
-    <string name="layout_horizontal">Horizontal</string>
+    <string name="clocks">Dial</string>
+    <string name="pins">Hands</string>
     <string name="border_radius">Border Radius</string>
     <string name="padding">Padding</string>
     <string name="margin">Margin</string>
@@ -17,11 +12,7 @@
     <!-- Messages Preferences -->
 
     <!-- Sync Preferences -->
-    <string name="show_clocks">Show Clocks</string>
-    <string name="show_background">Show Background</string>
-    <string name="desc">This app is a CLOCK WIDGET. You can find the WIDGET inside Widget Section of your phone.\n\nLong press on home screen, Click on Widgets -> Browse/Search -> Kinetic Clock Widget -> Expand -> Drag to home screen.</string>
-    <string name="widget_settings_button">Widget Settings Button</string>
-    <string name="footer">App Developed By Acoder.</string>
+    <string name="footer">App Developed By Nodroid.</string>
     <string name="wait_automatically">Wait! The clock will enabled automatically.</string>
     <string name="clock_image_desc">Clock Image</string>
     <string name="widget_vertical_label">Kinetic Clock (Vertical)</string>
