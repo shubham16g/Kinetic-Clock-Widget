@@ -1,50 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context=".SettingsActivity">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface"
+        app:elevation="0dp">
 
-        <androidx.appcompat.widget.Toolbar
+        <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:elevation="10dp"
-            app:title="Widget Settings">
+            android:layout_height="?attr/actionBarSize"
+            app:title="Widget Settings"
+            app:titleCentered="true"
+            app:titleTextAppearance="?attr/textAppearanceTitleLarge">
 
             <ImageButton
                 android:id="@+id/btn_close"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="end"
-                android:layout_marginEnd="16dp"
+                android:layout_marginEnd="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Close"
-                android:src="@drawable/ic_baseline_close_24" />
-        </androidx.appcompat.widget.Toolbar>
+                android:src="@drawable/ic_baseline_close_24"
+                app:tint="?attr/colorOnSurface" />
+        </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
-    <ImageView
-        android:id="@+id/image"
-        android:layout_width="280dp"
-        android:layout_height="280dp"
-        android:layout_gravity="center"
-        android:layout_margin="10dp"
-        android:contentDescription="@string/app_name" />
-
+    <!-- Always Visible Fixed Clock Preview (Without Card) -->
     <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="12dp">
+
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxHeight="220dp"
+            android:adjustViewBounds="true"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:contentDescription="@string/clock_image_desc"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Tap clock preview to test movement animation"
+            android:textAppearance="?attr/textAppearanceLabelSmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+
+    <!-- Scrollable Settings Options Below Clock Preview -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/settings_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:background="@drawable/sheet"
-        android:orientation="vertical"
-        android:elevation="10dp">
+        android:clipToPadding="false">
 
         <include layout="@layout/settings_content" />
-    </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
 </LinearLayout>

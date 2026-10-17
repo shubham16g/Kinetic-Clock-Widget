@@ -6,34 +6,43 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-
+import androidx.core.view.updatePadding
+import com.google.android.material.materialswitch.MaterialSwitch
 
 private const val TAG = "MainActivity"
+
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var backgroundSwitch: MaterialSwitch
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(
-            findViewById(R.id.appbar)
-        ) { v: View, insets: WindowInsetsCompat ->
+
+        val appbar = findViewById<View>(R.id.appbar)
+        val mainScroll = findViewById<View>(R.id.main_scroll_view)
+
+        ViewCompat.setOnApplyWindowInsetsListener(appbar) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(0, systemBars.top, 0, 0)
             insets
         }
 
-        val backgroundSwitch = findViewById<SwitchCompat>(R.id.backgroundSwitch)
+        ViewCompat.setOnApplyWindowInsetsListener(mainScroll) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updatePadding(bottom = systemBars.bottom + dpToPx(16).toInt())
+            insets
+        }
 
-        // Set initial states
+        backgroundSwitch = findViewById(R.id.backgroundSwitch)
+
         refreshSwitchStates()
 
-        // Set up listeners
         backgroundSwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
+            if (isChecked && !Utils.hasIgnoreBatteryOptimizationPermission(this)) {
                 Utils.requestIgnoreBatteryOptimization(this)
             }
         }
@@ -50,13 +59,12 @@ class MainActivity : AppCompatActivity() {
 
     private fun refreshSwitchStates() {
         val hasBgPermission = Utils.hasIgnoreBatteryOptimizationPermission(this)
-
-        findViewById<SwitchCompat>(R.id.backgroundSwitch).isChecked = hasBgPermission
+        backgroundSwitch.isChecked = hasBgPermission
         findViewById<View>(R.id.card_background_permission).visibility = if (hasBgPermission) View.GONE else View.VISIBLE
     }
 
     override fun onResume() {
         super.onResume()
-        refreshSwitchStates() // Refresh when returning from permission screens
+        refreshSwitchStates()
     }
 }

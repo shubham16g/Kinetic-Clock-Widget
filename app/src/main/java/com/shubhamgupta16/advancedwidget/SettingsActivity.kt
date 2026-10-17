@@ -8,13 +8,15 @@ import android.graphics.drawable.StateListDrawable
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.*
+import android.widget.CompoundButton
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.RadioButton
+import android.widget.RadioGroup
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import android.view.MenuItem
 import androidx.core.view.updatePadding
 import com.google.android.material.slider.Slider
 import com.shubhamgupta16.advancedwidget.core.AnimatedClockPreview
@@ -23,7 +25,6 @@ import com.shubhamgupta16.advancedwidget.kinetic96.Kinetic96ClockPreview
 import com.shubhamgupta16.advancedwidget.kinetic96.Kinetic96ClockWidget
 import yuku.ambilwarna.AmbilWarnaDialog
 import kotlin.math.roundToInt
-
 
 private const val TAG = "SettingsActivity"
 
@@ -38,14 +39,14 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var radioHorizontal: RadioButton
     private lateinit var pinRadioGroup: RadioGroup
     private lateinit var bgRadioGroup: RadioGroup
-    private lateinit var bgPicker: ImageView
-    private lateinit var pinPicker: ImageView
-    private lateinit var showBackgroundSwitch: SwitchCompat
+    private lateinit var bgPicker: ImageButton
+    private lateinit var pinPicker: ImageButton
+    private lateinit var showBackgroundSwitch: CompoundButton
     private lateinit var bgOpacitySlider: Slider
     private lateinit var borderRadiusSlider: Slider
     private lateinit var paddingSlider: Slider
     private lateinit var marginSlider: Slider
-    private lateinit var showClocksSwitch: SwitchCompat
+    private lateinit var showClocksSwitch: CompoundButton
     private lateinit var clocksOpacitySeekBar: Slider
 
     // Current values
@@ -54,11 +55,11 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var image: ImageView
     private lateinit var preview: AnimatedClockPreview
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_settings)
+
         ViewCompat.setOnApplyWindowInsetsListener(
             findViewById(R.id.appbar)
         ) { v: View, insets: WindowInsetsCompat ->
@@ -73,8 +74,6 @@ class SettingsActivity : AppCompatActivity() {
         // Get widget ID from intent
         widgetId = intent.getIntExtra(EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
         Log.d(TAG, "onCreate: widgetId: $widgetId")
-
-        // Initialize widget preferences
 
         // Setup toolbar
         setSupportActionBar(findViewById(R.id.toolbar))
@@ -106,9 +105,6 @@ class SettingsActivity : AppCompatActivity() {
         sendBroadcast(intent)
     }
 
-
-
-
     private fun initializeUiElements() {
         // preview image
         image = findViewById(R.id.image)
@@ -129,19 +125,12 @@ class SettingsActivity : AppCompatActivity() {
         bgPicker = findViewById(R.id.bg_picker)
         pinPicker = findViewById(R.id.pin_picker)
 
-//        pinRadioGroup.addView(generateRadioButton(Color.RED))
-//        pinRadioGroup.addView(generateRadioButton(Color.BLUE))
-//        pinRadioGroup.addView(generateRadioButton(Color.YELLOW))
-//        pinRadioGroup.addView(generateRadioButton(Color.GRAY))
-
-//        get resource array
         val colors = resources.getStringArray(R.array.colors_array)
         for (strColor in colors) {
             val color = Color.parseColor(strColor)
             pinRadioGroup.addView(generateRadioButton(color))
             bgRadioGroup.addView(generateRadioButton(color))
         }
-
     }
 
     private fun generateRadioButton(color: Int): RadioButton {
@@ -156,7 +145,6 @@ class SettingsActivity : AppCompatActivity() {
         radioButton.buttonDrawable = StateListDrawable()
         return radioButton
     }
-
 
     private fun loadSavedPreferences() {
         // Load layout setting
@@ -201,7 +189,6 @@ class SettingsActivity : AppCompatActivity() {
         // Load clock opacity
         val clocksOpacity = widgetPrefs.clocksOpacity(widgetId)
         clocksOpacitySeekBar.value = clocksOpacity.toFloat()
-
 
         val checkedPinRadio = pinRadioGroup.findViewWithTag<RadioButton>(pinColor)
         val checkedBgRadio = bgRadioGroup.findViewWithTag<RadioButton>(bgColor)
@@ -343,7 +330,6 @@ class SettingsActivity : AppCompatActivity() {
         }).show()
     }
 
-    // Update the widget
     private fun updateWidget() {
         if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
         val kickstart = Intent(this, Kinetic96ClockWidget::class.java)
