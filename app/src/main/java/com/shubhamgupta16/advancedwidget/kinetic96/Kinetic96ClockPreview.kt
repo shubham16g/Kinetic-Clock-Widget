@@ -1,13 +1,11 @@
 package com.shubhamgupta16.advancedwidget.kinetic96
 
-
 import android.content.Context
 import android.graphics.Bitmap
+import com.shubhamgupta16.advancedwidget.ClockAnimation
 import com.shubhamgupta16.advancedwidget.Draw2
 import com.shubhamgupta16.advancedwidget.Sf
 import com.shubhamgupta16.advancedwidget.core.AnimatedClockPreview
-import com.shubhamgupta16.advancedwidget.core.AnimatedClockWidgetProvider
-import com.shubhamgupta16.advancedwidget.core.ClockWidgetProvider
 import java.util.Calendar
 
 class Kinetic96ClockPreview(
@@ -33,7 +31,8 @@ class Kinetic96ClockPreview(
         currentTime: Calendar,
         fraction: Float,
         currentSec: Int,
-        isReArrange: Boolean
+        isReArrange: Boolean,
+        animation: ClockAnimation
     ): Bitmap {
         if (sf == null) sf = Sf(context)
         return Draw2.createTimeClockFrame(
@@ -43,7 +42,8 @@ class Kinetic96ClockPreview(
             currentTime,
             fraction,
             currentSec,
-            isReArrange
+            isReArrange,
+            animation
         )
     }
 

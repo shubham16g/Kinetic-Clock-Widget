@@ -3,6 +3,7 @@ package com.shubhamgupta16.advancedwidget.kinetic96
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.graphics.Bitmap
+import com.shubhamgupta16.advancedwidget.ClockAnimation
 import com.shubhamgupta16.advancedwidget.Draw2
 import com.shubhamgupta16.advancedwidget.Sf
 import com.shubhamgupta16.advancedwidget.core.AnimatedClockWidgetProvider
@@ -40,7 +41,8 @@ class KineticHorizontalClockWidget : AnimatedClockWidgetProvider() {
         currentTime: Calendar,
         fraction: Float,
         currentSec: Int,
-        isReArrange: Boolean
+        isReArrange: Boolean,
+        animation: ClockAnimation
     ): Bitmap {
         if (sf == null) sf = Sf(context)
         sf?.setIsHorizontal(appWidgetId, true)
@@ -51,7 +53,8 @@ class KineticHorizontalClockWidget : AnimatedClockWidgetProvider() {
             currentTime,
             fraction,
             currentSec,
-            isReArrange
+            isReArrange,
+            animation
         )
     }
 

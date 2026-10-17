@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.view.View
 import android.widget.RemoteViews
+import com.shubhamgupta16.advancedwidget.Draw2
 import com.shubhamgupta16.advancedwidget.R
 import java.util.Calendar
 
@@ -23,7 +24,8 @@ abstract class AnimatedClockWidgetProvider : ClockBuilder, ClockWidgetProvider()
 
         val baseBg = getBackground(context, appWidgetId)
         if (updateType == UpdateType.USER_CLICK) {
-            drawAnim(appWidgetId) { fraction, currentSec ->
+            val animation = Draw2.getRandomAnimation()
+            drawAnim(appWidgetId, animation.durationMs) { fraction, currentSec ->
                 appWidgetManager.updateAppWidget(
                     appWidgetId,
                     updateRemoteView(
@@ -36,7 +38,8 @@ abstract class AnimatedClockWidgetProvider : ClockBuilder, ClockWidgetProvider()
                             currentTime,
                             fraction,
                             currentSec,
-                            true
+                            true,
+                            animation
                         )
 
                     )

@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Bitmap
+import com.shubhamgupta16.advancedwidget.Draw2
 import java.util.Calendar
 
 abstract class AnimatedClockPreview(
@@ -48,7 +49,8 @@ abstract class AnimatedClockPreview(
         val isByTime = secondsNow <= 1
         val baseBg = getBackground(context, appWidgetId)
         if (updateType == UpdateType.USER_CLICK) {
-            drawAnim(appWidgetId) { fraction, currentSec ->
+            val animation = Draw2.getRandomAnimation()
+            drawAnim(appWidgetId, animation.durationMs) { fraction, currentSec ->
                 listener(
                     getClockFrame(
                         context,
@@ -57,7 +59,8 @@ abstract class AnimatedClockPreview(
                         currentTime,
                         fraction,
                         currentSec,
-                        true
+                        true,
+                        animation
                     )
                 )
             }

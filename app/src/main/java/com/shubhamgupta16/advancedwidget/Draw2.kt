@@ -1,6 +1,5 @@
 package com.shubhamgupta16.advancedwidget
 
-
 import android.content.Context
 import android.graphics.*
 import androidx.core.content.ContextCompat
@@ -8,11 +7,86 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
 
-object Draw2 {
-    const val EACH_CLOCK_DURATION = 3500L
-    const val WAVE_DELAY_DURATION = 1000L
-    const val ANIM_DURATION = EACH_CLOCK_DURATION + WAVE_DELAY_DURATION
+interface ClockAnimation {
+    val name: String
+    val durationMs: Long
 
+    fun getClockProgress(
+        fraction: Float,
+        col: Int,
+        row: Int,
+        maxCol: Int,
+        maxRow: Int
+    ): Float
+
+    object Wave : ClockAnimation {
+        override val name: String = "Wave"
+        const val EACH_CLOCK_DURATION = 3500L
+        const val WAVE_DELAY_DURATION = 1000L
+        override val durationMs: Long = EACH_CLOCK_DURATION + WAVE_DELAY_DURATION
+
+        override fun getClockProgress(
+            fraction: Float,
+            col: Int,
+            row: Int,
+            maxCol: Int,
+            maxRow: Int
+        ): Float {
+            val dMax = (maxCol + maxRow).toFloat()
+            val totalDuration = durationMs.toFloat()
+            val currentMs = fraction * totalDuration
+            val clockDurationFloat = EACH_CLOCK_DURATION.toFloat()
+            val normalizedDist = (col + row) / dMax
+            val startMs = normalizedDist * WAVE_DELAY_DURATION
+            val endMs = startMs + EACH_CLOCK_DURATION
+            val linearProgress = when {
+                currentMs <= startMs -> 0f
+                currentMs >= endMs -> 1f
+                else -> (currentMs - startMs) / clockDurationFloat
+            }
+            return linearProgress * linearProgress * (3f - 2f * linearProgress)
+        }
+    }
+
+    object Simultaneous : ClockAnimation {
+        override val name: String = "Simultaneous"
+        override val durationMs: Long = 4000L
+
+        override fun getClockProgress(
+            fraction: Float,
+            col: Int,
+            row: Int,
+            maxCol: Int,
+            maxRow: Int
+        ): Float {
+            val linearProgress = fraction.coerceIn(0f, 1f)
+            return linearProgress * linearProgress * (3f - 2f * linearProgress)
+        }
+    }
+}
+
+object Draw2 {
+    const val EACH_CLOCK_DURATION = ClockAnimation.Wave.EACH_CLOCK_DURATION
+    const val WAVE_DELAY_DURATION = ClockAnimation.Wave.WAVE_DELAY_DURATION
+    const val ANIM_DURATION = ClockAnimation.Wave.EACH_CLOCK_DURATION + ClockAnimation.Wave.WAVE_DELAY_DURATION
+
+    private val animationsList = mutableListOf<ClockAnimation>(
+        ClockAnimation.Wave,
+        ClockAnimation.Simultaneous
+    )
+
+    val animations: List<ClockAnimation>
+        get() = animationsList.toList()
+
+    fun registerAnimation(animation: ClockAnimation) {
+        if (!animationsList.contains(animation)) {
+            animationsList.add(animation)
+        }
+    }
+
+    fun getRandomAnimation(): ClockAnimation {
+        return animationsList.random()
+    }
 
     private val dateFormat = SimpleDateFormat("hhmm", Locale.ENGLISH)
     private fun toTime(mills: Long): IntArray {
@@ -125,8 +199,7 @@ object Draw2 {
         fraction: Float,
         currentSec: Int,
         isReArrange: Boolean = false,
-        eachClockDuration: Long = EACH_CLOCK_DURATION,
-        waveDelayDuration: Long = WAVE_DELAY_DURATION
+        animation: ClockAnimation = ClockAnimation.Wave
     ): Bitmap {
         val targetBitmap = getFrameBitmap(widgetId, baseBg.width, baseBg.height)
         val mu = CanvasMaker(
@@ -146,28 +219,28 @@ object Draw2 {
             if (currentSec >= 55) {
                 val futureArr = toTime(currentTime.timeInMillis + (1000 * 60))
                 mu.drawClocks(
-                    getBlock(fraction, nowArr[0], futureArr[0], true, 0, isHorizontal, eachClockDuration, waveDelayDuration),
-                    getBlock(fraction, nowArr[1], futureArr[1], true, 1, isHorizontal, eachClockDuration, waveDelayDuration),
-                    getBlock(fraction, nowArr[2], futureArr[2], true, 2, isHorizontal, eachClockDuration, waveDelayDuration),
-                    getBlock(fraction, nowArr[3], futureArr[3], true, 3, isHorizontal, eachClockDuration, waveDelayDuration),
+                    getBlock(fraction, nowArr[0], futureArr[0], true, 0, isHorizontal, animation),
+                    getBlock(fraction, nowArr[1], futureArr[1], true, 1, isHorizontal, animation),
+                    getBlock(fraction, nowArr[2], futureArr[2], true, 2, isHorizontal, animation),
+                    getBlock(fraction, nowArr[3], futureArr[3], true, 3, isHorizontal, animation),
                     isHorizontal = isHorizontal
                 )
             } else {
                 mu.drawClocks(
-                    getBlock(fraction, nowArr[0], nowArr[0], true, 0, isHorizontal, eachClockDuration, waveDelayDuration),
-                    getBlock(fraction, nowArr[1], nowArr[1], true, 1, isHorizontal, eachClockDuration, waveDelayDuration),
-                    getBlock(fraction, nowArr[2], nowArr[2], true, 2, isHorizontal, eachClockDuration, waveDelayDuration),
-                    getBlock(fraction, nowArr[3], nowArr[3], true, 3, isHorizontal, eachClockDuration, waveDelayDuration),
+                    getBlock(fraction, nowArr[0], nowArr[0], true, 0, isHorizontal, animation),
+                    getBlock(fraction, nowArr[1], nowArr[1], true, 1, isHorizontal, animation),
+                    getBlock(fraction, nowArr[2], nowArr[2], true, 2, isHorizontal, animation),
+                    getBlock(fraction, nowArr[3], nowArr[3], true, 3, isHorizontal, animation),
                     isHorizontal = isHorizontal
                 )
             }
         } else {
             val pastTime = toTime(currentTime.timeInMillis - (1000 * 60))
             mu.drawClocks(
-                getBlock(fraction, pastTime[0], nowArr[0], false, 0, isHorizontal, eachClockDuration, waveDelayDuration),
-                getBlock(fraction, pastTime[1], nowArr[1], false, 1, isHorizontal, eachClockDuration, waveDelayDuration),
-                getBlock(fraction, pastTime[2], nowArr[2], false, 2, isHorizontal, eachClockDuration, waveDelayDuration),
-                getBlock(fraction, pastTime[3], nowArr[3], false, 3, isHorizontal, eachClockDuration, waveDelayDuration),
+                getBlock(fraction, pastTime[0], nowArr[0], false, 0, isHorizontal, animation),
+                getBlock(fraction, pastTime[1], nowArr[1], false, 1, isHorizontal, animation),
+                getBlock(fraction, pastTime[2], nowArr[2], false, 2, isHorizontal, animation),
+                getBlock(fraction, pastTime[3], nowArr[3], false, 3, isHorizontal, animation),
                 isHorizontal = isHorizontal
             )
         }
@@ -209,8 +282,7 @@ object Draw2 {
         isReArrange: Boolean = false,
         blockIndex: Int = 0,
         isHorizontal: Boolean = true,
-        eachClockDuration: Long = EACH_CLOCK_DURATION,
-        waveDelayDuration: Long = WAVE_DELAY_DURATION
+        animation: ClockAnimation = ClockAnimation.Wave
     ): Array<FloatArray> {
         val beforeArr = ClockData.getLargeArray(before)
         if (fraction == 0f) return beforeArr
@@ -226,8 +298,7 @@ object Draw2 {
             isReArrange,
             blockIndex,
             isHorizontal,
-            eachClockDuration,
-            waveDelayDuration
+            animation
         )
         return resultArr
     }
@@ -240,15 +311,10 @@ object Draw2 {
         isReArrange: Boolean = false,
         blockIndex: Int = 0,
         isHorizontal: Boolean = true,
-        eachClockDuration: Long = EACH_CLOCK_DURATION,
-        waveDelayDuration: Long = WAVE_DELAY_DURATION
+        animation: ClockAnimation = ClockAnimation.Wave
     ) {
         val maxCol = if (isHorizontal) 15 else 7
         val maxRow = if (isHorizontal) 5 else 11
-        val dMax = (maxCol + maxRow).toFloat()
-        val totalDuration = (eachClockDuration + waveDelayDuration).toFloat()
-        val currentMs = r * totalDuration
-        val clockDurationFloat = eachClockDuration.coerceAtLeast(1L).toFloat()
 
         for (i in preArr.indices) {
             val current = preArr[i]
@@ -265,16 +331,7 @@ object Draw2 {
                 } else {
                     (blockIndex / 2) * 6 + (i / 4)
                 }
-                val normalizedDist = (col + row) / dMax
-                val startMs = normalizedDist * waveDelayDuration
-                val endMs = startMs + eachClockDuration
-                val linearProgress = when {
-                    currentMs <= startMs -> 0f
-                    currentMs >= endMs -> 1f
-                    else -> (currentMs - startMs) / clockDurationFloat
-                }
-                // SmoothStep easing for fluid hand rotation
-                linearProgress * linearProgress * (3f - 2f * linearProgress)
+                animation.getClockProgress(r, col, row, maxCol, maxRow)
             } else {
                 r
             }
