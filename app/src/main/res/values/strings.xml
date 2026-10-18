@@ -12,12 +12,12 @@
     <!-- Messages Preferences -->
 
     <!-- Sync Preferences -->
-    <string name="footer">App Developed By Nodroid.</string>
-    <string name="wait_automatically">Wait! The clock will enabled automatically.</string>
+    <string name="footer">App developed by Nodroid.</string>
+    <string name="wait_automatically">Wait! The clock will enable automatically.</string>
     <string name="clock_image_desc">Clock Image</string>
-    <string name="widget_vertical_label">Kinetic Clock (Vertical)</string>
+    <string name="widget_vertical_label">Vertical Kinetic Clock</string>
     <string name="widget_vertical_description">Vertical layout kinetic clock widget</string>
-    <string name="widget_horizontal_label">Kinetic Clock (Horizontal)</string>
+    <string name="widget_horizontal_label">Horizontal Kinetic Clock</string>
     <string name="widget_horizontal_description">Horizontal layout kinetic clock widget</string>
     <string name="title_widget_settings">Widget Settings</string>
 
@@ -26,4 +26,10 @@
     <string name="how_to_update_settings_step_1">Long-press the clock widget placed on your home screen.</string>
     <string name="how_to_update_settings_step_2">Tap the Edit or Settings icon in the popup menu.</string>
     <string name="how_to_update_settings_step_3">Customize colors, background opacity, border radius, padding, or dial visibility.</string>
+
+    <!-- Add Widget -->
+    <string name="btn_add_widget_to_home_screen">Add Widget to Home Screen</string>
+    <string name="select_widget_type">Select Widget Style</string>
+    <string name="pin_widget_not_supported">Adding widget directly is not supported by your launcher or Android version.</string>
+    <string name="text_or">OR</string>
 </resources>
