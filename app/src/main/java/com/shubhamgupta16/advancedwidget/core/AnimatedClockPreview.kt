@@ -33,10 +33,11 @@ abstract class AnimatedClockPreview(
     }
 
     fun notifyClick(context: Context) {
-        updateBitmap(context, if (isSettings) UpdateType.SETTINGS else UpdateType.USER_CLICK)
+        updateBitmap(context, UpdateType.USER_CLICK)
     }
 
     fun notifySettingsUpdated(context: Context) {
+        cancelAnim(appWidgetId)
         Draw2.invalidateBg(appWidgetId)
         updateBitmap(context, UpdateType.SETTINGS)
     }
@@ -87,9 +88,9 @@ abstract class AnimatedClockPreview(
                         appWidgetId,
                         baseBg,
                         currentTime,
-                        0f,
+                        1f,
                         secondsNow,
-                        true
+                        false
                     )
                 )
             }

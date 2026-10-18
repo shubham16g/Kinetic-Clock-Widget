@@ -337,6 +337,7 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         preview.unregister(this)
+        updateWidget()
         super.onDestroy()
     }
 }

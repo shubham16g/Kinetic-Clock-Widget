@@ -31,6 +31,15 @@ interface ClockBuilder {
         private val animEndTimeMap = mutableMapOf<Int, Long>()
     }
 
+    fun cancelAnim(widgetId: Int) {
+        synchronized(animatorMap) {
+            val existing = animatorMap.remove(widgetId)
+            animEndTimeMap.remove(widgetId)
+            existing?.removeAllUpdateListeners()
+            existing?.cancel()
+        }
+    }
+
 
     fun drawAnim(
         widgetId: Int,

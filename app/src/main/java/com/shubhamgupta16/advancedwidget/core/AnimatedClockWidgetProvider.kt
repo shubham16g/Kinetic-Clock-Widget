@@ -22,6 +22,7 @@ abstract class AnimatedClockWidgetProvider : ClockBuilder, ClockWidgetProvider()
         val isByTime = secondsNow <= 1
 
         if (updateType == UpdateType.SETTINGS) {
+            cancelAnim(appWidgetId)
             Draw2.invalidateBg(appWidgetId)
         }
 
@@ -79,9 +80,9 @@ abstract class AnimatedClockWidgetProvider : ClockBuilder, ClockWidgetProvider()
                             appWidgetId,
                             baseBg,
                             currentTime,
-                            0f,
+                            1f,
                             secondsNow,
-                            true
+                            false
                         )
                     )
                 )
