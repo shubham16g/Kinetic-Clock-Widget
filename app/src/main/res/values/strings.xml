@@ -20,4 +20,10 @@
     <string name="widget_horizontal_label">Kinetic Clock (Horizontal)</string>
     <string name="widget_horizontal_description">Horizontal layout kinetic clock widget</string>
     <string name="title_widget_settings">Widget Settings</string>
+
+    <!-- How to Update Clock Settings -->
+    <string name="how_to_update_settings_title">How to Update Clock Settings</string>
+    <string name="how_to_update_settings_step_1">Long-press the clock widget placed on your home screen.</string>
+    <string name="how_to_update_settings_step_2">Tap the Edit or Settings icon in the popup menu.</string>
+    <string name="how_to_update_settings_step_3">Customize colors, background opacity, border radius, padding, or dial visibility.</string>
 </resources>
