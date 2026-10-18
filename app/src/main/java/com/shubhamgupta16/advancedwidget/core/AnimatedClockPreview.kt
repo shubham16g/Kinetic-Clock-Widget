@@ -37,6 +37,7 @@ abstract class AnimatedClockPreview(
     }
 
     fun notifySettingsUpdated(context: Context) {
+        Draw2.invalidateBg(appWidgetId)
         updateBitmap(context, UpdateType.SETTINGS)
     }
 
@@ -49,7 +50,7 @@ abstract class AnimatedClockPreview(
         val isByTime = secondsNow <= 1
         val baseBg = getBackground(context, appWidgetId)
         if (updateType == UpdateType.USER_CLICK) {
-            val animation = Draw2.getRandomAnimation()
+            val animation = Draw2.getNextAnimation()
             drawAnim(appWidgetId, animation.durationMs) { fraction, currentSec ->
                 listener(
                     getClockFrame(

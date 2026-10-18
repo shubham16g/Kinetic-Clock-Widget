@@ -31,7 +31,7 @@ class KineticHorizontalClockWidget : AnimatedClockWidgetProvider() {
     override fun getBackground(context: Context, appWidgetId: Int): Bitmap {
         if (sf == null) sf = Sf(context)
         sf?.setIsHorizontal(appWidgetId, true)
-        return Draw2.buildBG(context, sf!!, appWidgetId)
+        return Draw2.getOrBuildBG(context, sf!!, appWidgetId)
     }
 
     override fun getClockFrame(

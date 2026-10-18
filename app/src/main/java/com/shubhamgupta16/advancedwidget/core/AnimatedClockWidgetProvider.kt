@@ -21,10 +21,13 @@ abstract class AnimatedClockWidgetProvider : ClockBuilder, ClockWidgetProvider()
         val secondsNow = currentTime.get(Calendar.SECOND)
         val isByTime = secondsNow <= 1
 
+        if (updateType == UpdateType.SETTINGS) {
+            Draw2.invalidateBg(appWidgetId)
+        }
 
         val baseBg = getBackground(context, appWidgetId)
         if (updateType == UpdateType.USER_CLICK) {
-            val animation = Draw2.getRandomAnimation()
+            val animation = Draw2.getNextAnimation()
             drawAnim(appWidgetId, animation.durationMs) { fraction, currentSec ->
                 appWidgetManager.updateAppWidget(
                     appWidgetId,

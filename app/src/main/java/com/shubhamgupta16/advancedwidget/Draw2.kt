@@ -172,8 +172,18 @@ object Draw2 {
         }
     }
 
+    private var animationIndex = 0
+
+    @Synchronized
+    fun getNextAnimation(): ClockAnimation {
+        if (animationsList.isEmpty()) return ClockAnimation.Wave
+        val animation = animationsList[animationIndex % animationsList.size]
+        animationIndex = (animationIndex + 1) % animationsList.size
+        return animation
+    }
+
     fun getRandomAnimation(): ClockAnimation {
-        return animationsList.random()
+        return getNextAnimation()
     }
 
     private val dateFormat = SimpleDateFormat("hhmm", Locale.ENGLISH)
@@ -265,6 +275,24 @@ object Draw2 {
             canvas.restore()
         }
         return baseBg
+    }
+
+    private val bgCache = HashMap<Int, Bitmap>()
+
+    fun getOrBuildBG(context: Context, sf: Sf, widgetId: Int, forceRebuild: Boolean = false): Bitmap {
+        if (!forceRebuild) {
+            val existing = bgCache[widgetId]
+            if (existing != null && !existing.isRecycled) {
+                return existing
+            }
+        }
+        val newBg = buildBG(context, sf, widgetId)
+        bgCache[widgetId] = newBg
+        return newBg
+    }
+
+    fun invalidateBg(widgetId: Int) {
+        bgCache.remove(widgetId)
     }
 
     private val bitmapCache = HashMap<Int, Bitmap>()

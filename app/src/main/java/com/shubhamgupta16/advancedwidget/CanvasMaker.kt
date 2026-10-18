@@ -25,7 +25,9 @@ class CanvasMaker(
 
     init {
         bg.eraseColor(Color.TRANSPARENT)
-        canvas.drawBitmap(baseBg, 0f, 0f, null)
+        if (!baseBg.isRecycled) {
+            canvas.drawBitmap(baseBg, 0f, 0f, null)
+        }
 
         paint.style = Paint.Style.STROKE
         paint.isDither = true
@@ -82,7 +84,6 @@ class CanvasMaker(
         var top = baseY
         var left = baseX
         for (i in numberArray.indices) {
-            drawCircle(left, top)
             val pin = numberArray[i]
             drawLine(pin[0], size / 2.4f, left, top)
             drawLine(pin[1], size / 2.8f, left, top)
@@ -99,10 +100,6 @@ class CanvasMaker(
         val toX = x + radius * sin(rad)
         val toY = y + radius * cos(rad)
         canvas.drawLine(x, y, toX, toY, paint)
-    }
-
-    private fun drawCircle(x: Float, y: Float) {
-        canvas.drawCircle(x, y, size / 2f, circlePaint)
     }
 
 
