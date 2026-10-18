@@ -8,7 +8,7 @@
     android:minResizeWidth="220dp"
     android:minResizeHeight="100dp"
     android:updatePeriodMillis="86400000"
-    android:previewImage="@drawable/multi_clock_thumb"
+    android:previewImage="@drawable/multi_clock_thumb_horizontal"
     android:description="@string/widget_horizontal_description"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"

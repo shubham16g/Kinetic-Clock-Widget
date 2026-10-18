@@ -58,23 +58,26 @@ class MainActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 val appWidgetManager = AppWidgetManager.getInstance(this)
                 if (appWidgetManager.isRequestPinAppWidgetSupported) {
-                    val options = arrayOf(
-                        getString(R.string.widget_vertical_label),
-                        getString(R.string.widget_horizontal_label)
-                    )
-                    MaterialAlertDialogBuilder(this)
+                    val dialogView = layoutInflater.inflate(R.layout.dialog_select_widget, null)
+                    val dialog = MaterialAlertDialogBuilder(this)
                         .setTitle(R.string.select_widget_type)
-                        .setItems(options) { _, which ->
-                            val providerClass = if (which == 0) {
-                                KineticVerticalClockWidget::class.java
-                            } else {
-                                KineticHorizontalClockWidget::class.java
-                            }
-                            val provider = ComponentName(this, providerClass)
-                            appWidgetManager.requestPinAppWidget(provider, null, null)
-                        }
+                        .setView(dialogView)
                         .setNegativeButton(android.R.string.cancel, null)
-                        .show()
+                        .create()
+
+                    dialogView.findViewById<View>(R.id.card_vertical_widget).setOnClickListener {
+                        dialog.dismiss()
+                        val provider = ComponentName(this, KineticVerticalClockWidget::class.java)
+                        appWidgetManager.requestPinAppWidget(provider, null, null)
+                    }
+
+                    dialogView.findViewById<View>(R.id.card_horizontal_widget).setOnClickListener {
+                        dialog.dismiss()
+                        val provider = ComponentName(this, KineticHorizontalClockWidget::class.java)
+                        appWidgetManager.requestPinAppWidget(provider, null, null)
+                    }
+
+                    dialog.show()
                 } else {
                     Toast.makeText(this, R.string.pin_widget_not_supported, Toast.LENGTH_SHORT).show()
                 }
